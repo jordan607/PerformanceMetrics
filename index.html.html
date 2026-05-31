@@ -1,0 +1,424 @@
+
+<h2 class="sr-only">Performance metrics reference and calculator for distributed systems</h2>
+<style>
+  .pm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 24px; }
+  .pm-card { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; cursor: pointer; border: 1.5px solid transparent; transition: border-color .15s; }
+  .pm-card:hover { border-color: var(--color-border-secondary); }
+  .pm-card.active { border-color: var(--color-border-info); background: var(--color-background-info); }
+  .pm-card.active .pm-label { color: var(--color-text-info); }
+  .pm-card.active .pm-cat { color: var(--color-text-info); opacity: .7; }
+  .pm-label { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 2px; }
+  .pm-cat { font-size: 11px; color: var(--color-text-tertiary); margin: 0; text-transform: uppercase; letter-spacing: .04em; }
+  .detail-panel { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 20px 24px; margin-bottom: 24px; }
+  .detail-name { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin: 0 0 4px; }
+  .detail-aka { font-size: 12px; color: var(--color-text-tertiary); margin: 0 0 14px; }
+  .detail-desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin: 0 0 16px; }
+  .formula-box { background: var(--color-background-secondary); border-left: 3px solid var(--color-border-info); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; padding: 10px 14px; font-size: 13px; font-family: var(--font-mono); color: var(--color-text-primary); margin: 0 0 16px; white-space: pre-wrap; }
+  .calc-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  .calc-label { font-size: 13px; color: var(--color-text-secondary); min-width: 130px; }
+  .calc-input { width: 90px; }
+  .calc-result { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 16px; font-size: 22px; font-weight: 500; color: var(--color-text-primary); display: inline-block; margin-top: 4px; }
+  .result-unit { font-size: 13px; color: var(--color-text-secondary); margin-left: 4px; }
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .tag-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .tag-info { background: var(--color-background-info); color: var(--color-text-info); }
+  .tag-suc  { background: var(--color-background-success); color: var(--color-text-success); }
+  .tag-err  { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .bench-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-secondary); padding: 5px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .bench-row:last-child { border: none; }
+  .bench-good { color: var(--color-text-success); font-weight: 500; }
+  .bench-warn { color: var(--color-text-warning); font-weight: 500; }
+  .bench-bad  { color: var(--color-text-danger); font-weight: 500; }
+  .section-title { font-size: 12px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px; }
+  select { font-size: 13px; padding: 6px 10px; }
+</style>
+
+<div style="margin-bottom:16px">
+  <p class="section-title">Filter by category</p>
+  <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px" id="cat-filters">
+    <button onclick="filterCat('all')" class="active" id="f-all" style="font-size:12px;padding:4px 12px;border-radius:20px">All</button>
+    <button onclick="filterCat('latency')" id="f-latency" style="font-size:12px;padding:4px 12px;border-radius:20px">Latency</button>
+    <button onclick="filterCat('throughput')" id="f-throughput" style="font-size:12px;padding:4px 12px;border-radius:20px">Throughput</button>
+    <button onclick="filterCat('availability')" id="f-availability" style="font-size:12px;padding:4px 12px;border-radius:20px">Availability</button>
+    <button onclick="filterCat('error')" id="f-error" style="font-size:12px;padding:4px 12px;border-radius:20px">Errors</button>
+    <button onclick="filterCat('resource')" id="f-resource" style="font-size:12px;padding:4px 12px;border-radius:20px">Resources</button>
+    <button onclick="filterCat('business')" id="f-business" style="font-size:12px;padding:4px 12px;border-radius:20px">Business</button>
+  </div>
+  <div class="pm-grid" id="cards-container"></div>
+</div>
+
+<div class="detail-panel" id="detail-panel"></div>
+
+<script>
+const METRICS = [
+  {
+    id:'p50', name:'Median latency (p50)', aka:'50th percentile', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Baseline',c:'suc'}],
+    desc:'The midpoint of all response times — 50% of requests complete faster than this value. It represents the "typical" user experience. Easy to calculate but hides slow outliers.',
+    formula:'Sort all response times → value at position (N × 0.50)',
+    calcType:'percentile', pctVal:50,
+    benchmarks:[['API endpoint','< 100 ms','good'],['DB query','< 10 ms','good'],['Page load','< 1 s','good']]
+  },
+  {
+    id:'p90', name:'p90 latency', aka:'90th percentile', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'SLO target',c:'warn'}],
+    desc:'90% of requests complete within this time. A common SLO target — it excludes the worst 10% of outliers while capturing most user experience.',
+    formula:'Sort all response times → value at position (N × 0.90)',
+    calcType:'percentile', pctVal:90,
+    benchmarks:[['REST API','< 200 ms','good'],['DB query','< 50 ms','good'],['Checkout flow','< 2 s','good']]
+  },
+  {
+    id:'p95', name:'p95 latency', aka:'95th percentile', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'SLA target',c:'warn'}],
+    desc:'95% of requests finish within this time. A stricter SLA target, often used for customer-facing commitments. Captures more of the tail than p90.',
+    formula:'Sort all response times → value at position (N × 0.95)',
+    calcType:'percentile', pctVal:95,
+    benchmarks:[['Web API','< 500 ms','good'],['Search','< 300 ms','good'],['Payments','< 3 s','good']]
+  },
+  {
+    id:'p99', name:'p99 latency', aka:'99th percentile / tail latency', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Tail latency',c:'err'}],
+    desc:'Only 1% of requests are slower than this. Critical for systems where slow requests compound (microservices fan-out). At 100 RPS, p99 fires every second.',
+    formula:'Sort all response times → value at position (N × 0.99)',
+    calcType:'percentile', pctVal:99,
+    benchmarks:[['Internal API','< 1 s','good'],['DB read','< 100 ms','good'],['Cache miss','< 500 ms','good']]
+  },
+  {
+    id:'p999', name:'p99.9 latency', aka:'Three nines / extreme tail', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Extreme tail',c:'err'}],
+    desc:'1 in 1000 requests is slower than this. Important for high-volume systems: at 10K RPS, p99.9 fires 10 times per second and directly affects users.',
+    formula:'Sort all response times → value at position (N × 0.999)',
+    calcType:'percentile', pctVal:99.9,
+    benchmarks:[['High-volume API','< 5 s','good'],['At 10K RPS','10 req/s affected','warn']]
+  },
+  {
+    id:'avg', name:'Average (mean) latency', aka:'Mean response time', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Misleading',c:'err'}],
+    desc:'Sum of all response times divided by count. Heavily skewed by outliers — a single 10 s timeout drags the average far above the typical experience. Use percentiles instead for SLOs.',
+    formula:'Mean = Σ(all response times) / N',
+    calcType:'mean',
+    benchmarks:[['Warning','Outliers skew heavily','warn'],['Prefer','p50 / p99 for SLOs','good']]
+  },
+  {
+    id:'tps', name:'Throughput (TPS / RPS)', aka:'Transactions or requests per second', cat:'throughput',
+    tags:[{l:'Throughput',c:'suc'},{l:'Capacity',c:'info'}],
+    desc:'The number of requests (or transactions) the system processes per second. The primary capacity metric. Measured at the load balancer or application layer.',
+    formula:'TPS = Total requests / Time window (seconds)',
+    calcType:'tps',
+    benchmarks:[['Read-heavy API','1K–100K RPS','good'],['Write-heavy','100–10K TPS','warn'],['DB writes','100–5K TPS','warn']]
+  },
+  {
+    id:'qps', name:'QPS (queries per second)', aka:'Database query throughput', cat:'throughput',
+    tags:[{l:'Throughput',c:'suc'},{l:'DB metric',c:'info'}],
+    desc:'Specifically measures database or search query volume per second. Tracked separately from API RPS to identify DB as the bottleneck.',
+    formula:'QPS = Total DB queries / Time window (seconds)',
+    calcType:'tps',
+    benchmarks:[['PostgreSQL','1K–10K QPS','good'],['MySQL','2K–20K QPS','good'],['MongoDB','10K–100K QPS','good']]
+  },
+  {
+    id:'avail', name:'Availability', aka:'Uptime / SLA nines', cat:'availability',
+    tags:[{l:'Availability',c:'suc'},{l:'SLA',c:'warn'}],
+    desc:'The fraction of time the system is operational and serving requests correctly. Expressed as "nines" — 99.9% means 8.7 hours downtime/year, 99.99% means 52 minutes/year.',
+    formula:'Availability = Uptime / (Uptime + Downtime) × 100%',
+    calcType:'avail',
+    benchmarks:[['99% (two nines)','87.6 hrs/yr down','warn'],['99.9% (three nines)','8.76 hrs/yr down','warn'],['99.99% (four nines)','52.6 min/yr down','good'],['99.999% (five nines)','5.26 min/yr down','good']]
+  },
+  {
+    id:'mttr', name:'MTTR', aka:'Mean time to recovery', cat:'availability',
+    tags:[{l:'Availability',c:'suc'},{l:'Incident',c:'err'}],
+    desc:'Average time from when a failure occurs to when the system is fully restored. Drives the availability denominator. Lower is better — achieved through fast detection, runbooks, and automation.',
+    formula:'MTTR = Total downtime / Number of incidents',
+    calcType:'mttr',
+    benchmarks:[['Excellent','< 5 min','good'],['Good','< 30 min','good'],['Acceptable','< 2 hrs','warn'],['Poor','> 2 hrs','bad']]
+  },
+  {
+    id:'mtbf', name:'MTBF', aka:'Mean time between failures', cat:'availability',
+    tags:[{l:'Availability',c:'suc'},{l:'Reliability',c:'info'}],
+    desc:'Average time between successive failures. Higher is better — indicates how long the system runs before the next incident. MTBF drives the numerator in availability calculations.',
+    formula:'MTBF = Total operational time / Number of failures\nAvailability ≈ MTBF / (MTBF + MTTR)',
+    calcType:'mtbf',
+    benchmarks:[['Consumer app','> 720 hrs (30 days)','good'],['Critical infra','> 8760 hrs (1 yr)','good']]
+  },
+  {
+    id:'err', name:'Error rate', aka:'Failure rate / HTTP 5xx rate', cat:'error',
+    tags:[{l:'Errors',c:'err'},{l:'Quality',c:'warn'}],
+    desc:'Percentage of requests that result in an error (HTTP 5xx, timeout, exception). The primary quality metric. Tracked separately for each service and endpoint.',
+    formula:'Error rate = (Failed requests / Total requests) × 100%',
+    calcType:'errrate',
+    benchmarks:[['Excellent','< 0.01%','good'],['Good','< 0.1%','good'],['Acceptable','< 1%','warn'],['Poor','>1%','bad']]
+  },
+  {
+    id:'apdex', name:'Apdex score', aka:'Application Performance Index', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'UX score',c:'suc'}],
+    desc:'Converts raw latency into a 0–1 satisfaction score using a threshold T. Requests under T are "satisfied", under 4T are "tolerating", over 4T are "frustrated". Apdex 0.94+ is "excellent".',
+    formula:'Apdex = (Satisfied + Tolerating/2) / Total\nSatisfied = requests < T\nTolerating = requests T–4T\nFrustrated = requests > 4T',
+    calcType:'apdex',
+    benchmarks:[['Excellent','0.94 – 1.00','good'],['Good','0.85 – 0.93','good'],['Fair','0.70 – 0.84','warn'],['Poor','< 0.70','bad']]
+  },
+  {
+    id:'cpu', name:'CPU utilisation', aka:'CPU usage %', cat:'resource',
+    tags:[{l:'Resource',c:'warn'},{l:'Scaling signal',c:'info'}],
+    desc:'Percentage of CPU time used vs available. The primary horizontal-scaling trigger. High CPU causes request queuing which spikes latency nonlinearly beyond ~70%.',
+    formula:'CPU% = (CPU time used / Total CPU time) × 100\nMeasured per core or averaged across all cores',
+    calcType:'pct',
+    benchmarks:[['Healthy','< 60%','good'],['Scale-out trigger','> 70%','warn'],['Critical','> 90%','bad']]
+  },
+  {
+    id:'mem', name:'Memory utilisation', aka:'RAM usage %', cat:'resource',
+    tags:[{l:'Resource',c:'warn'}],
+    desc:'Percentage of RAM in use. High memory triggers GC pauses (JVM, Go) or OOM kills. Watch for slow creep indicating memory leaks — stable plateau is healthy, steady rise is not.',
+    formula:'Memory% = (Used RAM / Total RAM) × 100\nAlso track: heap usage, GC pause duration',
+    calcType:'pct',
+    benchmarks:[['Healthy','< 70%','good'],['Watch zone','70–85%','warn'],['Critical','> 85%','bad']]
+  },
+  {
+    id:'iops', name:'IOPS', aka:'I/O operations per second', cat:'resource',
+    tags:[{l:'Resource',c:'warn'},{l:'Storage',c:'info'}],
+    desc:'Number of read/write operations the storage can handle per second. The bottleneck for write-heavy databases. AWS gp3 provides 3000 IOPS baseline; io1/io2 provides up to 64K provisioned IOPS.',
+    formula:'IOPS = Total I/O operations / Time (seconds)\nAlso track: I/O wait % in CPU stats',
+    calcType:'tps',
+    benchmarks:[['gp3 SSD (AWS)','3K–16K IOPS','good'],['io2 Block (AWS)','up to 64K IOPS','good'],['HDD','100–200 IOPS','warn']]
+  },
+  {
+    id:'bandwidth', name:'Network bandwidth', aka:'Throughput / network I/O', cat:'resource',
+    tags:[{l:'Resource',c:'warn'},{l:'Network',c:'info'}],
+    desc:'Volume of data transferred per second across the network. Measured in Mbps or Gbps. Critical for data-intensive services (video, large payloads, replication traffic).',
+    formula:'Bandwidth = Data transferred (bits) / Time (seconds)\nMbps = MB/s × 8',
+    calcType:'bandwidth',
+    benchmarks:[['EC2 t3.medium','Up to 5 Gbps','good'],['EC2 m5.xlarge','Up to 10 Gbps','good'],['Intra-AZ','< 1 ms latency','good']]
+  },
+  {
+    id:'conc', name:'Concurrent connections', aka:'Active connections / open sockets', cat:'throughput',
+    tags:[{l:'Throughput',c:'suc'},{l:'Capacity',c:'info'}],
+    desc:'Number of active TCP connections or open sessions at any instant. Drives thread pool sizing, connection pool limits, and file descriptor limits (ulimit). At high concurrency, each idle connection still consumes memory.',
+    formula:'Concurrent connections = RPS × Average response time (in seconds)\n(Little\'s Law)',
+    calcType:'littles',
+    benchmarks:[['Nginx','50K+ concurrent','good'],['Node.js','10K–50K','good'],['DB pool','50–500 typical','warn']]
+  },
+  {
+    id:'slo', name:'SLO / SLA', aka:'Service Level Objective / Agreement', cat:'availability',
+    tags:[{l:'Availability',c:'suc'},{l:'Contract',c:'warn'}],
+    desc:'SLO = internal target (e.g. p99 < 200 ms, error rate < 0.1%). SLA = external contract with penalties. Error budget = allowed violations before the SLO is breached (100% − SLO%).',
+    formula:'Error budget (minutes/month) = (1 − SLO%) × 43,800 min\nBurn rate = Current error rate / SLO error rate',
+    calcType:'errbudget',
+    benchmarks:[['99.9% SLO','43.8 min/month budget','warn'],['99.99% SLO','4.38 min/month budget','good'],['Burn rate > 1','Budget depleting','bad']]
+  },
+  {
+    id:'saturation', name:'Saturation', aka:'Queue depth / backlog', cat:'resource',
+    tags:[{l:'Resource',c:'warn'},{l:'USE method',c:'info'}],
+    desc:'How "full" a resource is — the queue depth of pending work when a resource is at capacity. Part of the USE method (Utilisation, Saturation, Errors). Non-zero saturation means requests are waiting, not just processing.',
+    formula:'Saturation = Queue depth (pending requests waiting for a resource)\nMonitor: thread pool queue, DB connection wait, GC pause frequency',
+    calcType:null,
+    benchmarks:[['Thread pool queue','0 (no wait)','good'],['DB conn wait','< 5 ms avg','good'],['> 0 sustained','Resource bottleneck','bad']]
+  },
+  {
+    id:'cacheHit', name:'Cache hit ratio', aka:'Cache effectiveness', cat:'resource',
+    tags:[{l:'Resource',c:'warn'},{l:'Performance',c:'suc'}],
+    desc:'Percentage of requests served from cache without touching the database. A high cache hit ratio is one of the most effective latency and cost reducers. A drop signals cache eviction or cold start.',
+    formula:'Hit ratio = Cache hits / (Cache hits + Cache misses) × 100%',
+    calcType:'errrate',
+    benchmarks:[['Excellent','> 95%','good'],['Good','85–95%','good'],['Low','< 80% — investigate','warn']]
+  },
+  {
+    id:'ttfb', name:'TTFB', aka:'Time to first byte', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Web / CDN',c:'suc'}],
+    desc:'Time from the client sending a request to receiving the first byte of the response. Measures server + network overhead before the client can start rendering. A key Web Vitals input.',
+    formula:'TTFB = DNS lookup + TCP handshake + TLS + Server processing + Network RTT',
+    calcType:null,
+    benchmarks:[['Excellent','< 200 ms','good'],['Good','< 500 ms','good'],['Poor','> 1 s — check TTFB breakdown','warn']]
+  },
+  {
+    id:'gcpause', name:'GC pause duration', aka:'Stop-the-world pause', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'JVM / Go',c:'warn'}],
+    desc:'Time the application is frozen while the garbage collector runs. Directly causes p99 latency spikes. Tune heap size, GC algorithm (G1, ZGC, Shenandoah), and allocation rate.',
+    formula:'GC pause % = Σ(GC pause durations) / Total elapsed time × 100\nMonitor: -Xlog:gc* (JVM), GOGC (Go)',
+    calcType:null,
+    benchmarks:[['G1GC target','< 200 ms per pause','good'],['ZGC / Shenandoah','< 10 ms','good'],['GC overhead','>5% of CPU — tune heap','warn']]
+  },
+  {
+    id:'dbrepl', name:'DB replication lag', aka:'Replica delay', cat:'latency',
+    tags:[{l:'Latency',c:'info'},{l:'Database',c:'info'}],
+    desc:'Seconds behind the primary the read replica is. A lagging replica serves stale data. Caused by write bursts, large transactions, or network saturation. Monitor seconds_behind_master (MySQL) or pg_stat_replication (Postgres).',
+    formula:'Lag = Primary WAL position − Replica applied position\n(measured in bytes or seconds)',
+    calcType:null,
+    benchmarks:[['Healthy','< 1 s','good'],['Acceptable','< 10 s','warn'],['Critical','> 60 s — stale reads','bad']]
+  },
+];
+
+let activeCat = 'all';
+let activeId = METRICS[1].id;
+
+function filterCat(cat) {
+  activeCat = cat;
+  document.querySelectorAll('#cat-filters button').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-' + cat).classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const c = document.getElementById('cards-container');
+  const filtered = activeCat === 'all' ? METRICS : METRICS.filter(m => m.cat === activeCat);
+  c.innerHTML = filtered.map(m => `
+    <div class="pm-card${m.id === activeId ? ' active' : ''}" onclick="selectMetric('${m.id}')">
+      <p class="pm-label">${m.name}</p>
+      <p class="pm-cat">${m.cat}</p>
+    </div>
+  `).join('');
+}
+
+function selectMetric(id) {
+  activeId = id;
+  renderCards();
+  renderDetail();
+}
+
+function calcResult(m) {
+  const t = m.calcType;
+  if (t === 'percentile') {
+    const raw = document.getElementById('pct-input').value.trim();
+    const vals = raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n)).sort((a,b) => a-b);
+    if (!vals.length) return {val:'—', unit:''};
+    const idx = Math.ceil((m.pctVal / 100) * vals.length) - 1;
+    return {val: vals[Math.max(0, idx)].toFixed(1), unit:'ms'};
+  }
+  if (t === 'mean') {
+    const raw = document.getElementById('pct-input').value.trim();
+    const vals = raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+    if (!vals.length) return {val:'—', unit:''};
+    return {val: (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1), unit:'ms'};
+  }
+  if (t === 'tps') {
+    const req = parseFloat(document.getElementById('calc-a').value) || 0;
+    const secs = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: (req / secs).toFixed(1), unit:'per second'};
+  }
+  if (t === 'avail') {
+    const up = parseFloat(document.getElementById('calc-a').value) || 0;
+    const down = parseFloat(document.getElementById('calc-b').value) || 0;
+    const pct = ((up / (up + down)) * 100);
+    return {val: pct.toFixed(4), unit:'%'};
+  }
+  if (t === 'mttr') {
+    const total = parseFloat(document.getElementById('calc-a').value) || 0;
+    const count = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: (total / count).toFixed(1), unit:'min avg per incident'};
+  }
+  if (t === 'mtbf') {
+    const opTime = parseFloat(document.getElementById('calc-a').value) || 0;
+    const fails = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: (opTime / fails).toFixed(1), unit:'hours between failures'};
+  }
+  if (t === 'errrate') {
+    const fail = parseFloat(document.getElementById('calc-a').value) || 0;
+    const total = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: ((fail / total) * 100).toFixed(3), unit:'%'};
+  }
+  if (t === 'apdex') {
+    const sat = parseFloat(document.getElementById('calc-a').value) || 0;
+    const tol = parseFloat(document.getElementById('calc-b').value) || 0;
+    const total = parseFloat(document.getElementById('calc-c').value) || 1;
+    return {val: ((sat + tol / 2) / total).toFixed(3), unit:'/ 1.0'};
+  }
+  if (t === 'pct') {
+    const used = parseFloat(document.getElementById('calc-a').value) || 0;
+    const total = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: ((used / total) * 100).toFixed(1), unit:'%'};
+  }
+  if (t === 'bandwidth') {
+    const mb = parseFloat(document.getElementById('calc-a').value) || 0;
+    const secs = parseFloat(document.getElementById('calc-b').value) || 1;
+    return {val: ((mb * 8) / secs).toFixed(1), unit:'Mbps'};
+  }
+  if (t === 'littles') {
+    const rps = parseFloat(document.getElementById('calc-a').value) || 0;
+    const rt = parseFloat(document.getElementById('calc-b').value) || 0;
+    return {val: Math.round(rps * rt).toString(), unit:'concurrent connections'};
+  }
+  if (t === 'errbudget') {
+    const slo = parseFloat(document.getElementById('calc-a').value) || 99.9;
+    return {val: ((1 - slo/100) * 43800).toFixed(1), unit:'min / month budget'};
+  }
+  return {val:'—', unit:''};
+}
+
+function buildCalc(m) {
+  const t = m.calcType;
+  if (!t) return '<p style="font-size:13px;color:var(--color-text-tertiary);margin:0">No calculator for this metric — measured directly via APM tooling (Datadog, Prometheus, New Relic).</p>';
+
+  const inputBlock = (id, label, placeholder, defaultVal) =>
+    `<div class="calc-row"><span class="calc-label">${label}</span><input class="calc-input" id="${id}" type="text" placeholder="${placeholder}" value="${defaultVal}" oninput="updateResult('${m.id}')"></div>`;
+
+  let inputs = '';
+  if (t === 'percentile' || t === 'mean') {
+    inputs = inputBlock('pct-input', 'Response times (ms, csv)', '45,80,120,200,350,900', '45,80,120,200,350,900');
+  } else if (t === 'tps') {
+    inputs = inputBlock('calc-a','Total requests','10000','10000') + inputBlock('calc-b','Time window (sec)','60','60');
+  } else if (t === 'avail') {
+    inputs = inputBlock('calc-a','Uptime (minutes)','43757','43757') + inputBlock('calc-b','Downtime (minutes)','43','43');
+  } else if (t === 'mttr') {
+    inputs = inputBlock('calc-a','Total downtime (min)','120','120') + inputBlock('calc-b','Number of incidents','4','4');
+  } else if (t === 'mtbf') {
+    inputs = inputBlock('calc-a','Operational time (hrs)','720','720') + inputBlock('calc-b','Number of failures','3','3');
+  } else if (t === 'errrate') {
+    inputs = inputBlock('calc-a','Failed / misses','12','12') + inputBlock('calc-b','Total requests / lookups','10000','10000');
+  } else if (t === 'apdex') {
+    inputs = inputBlock('calc-a','Satisfied (< T)','800','800') + inputBlock('calc-b','Tolerating (T–4T)','150','150') + inputBlock('calc-c','Total requests','1000','1000');
+  } else if (t === 'pct') {
+    inputs = inputBlock('calc-a','Used','3.2','3.2') + inputBlock('calc-b','Total (same unit)','8','8');
+  } else if (t === 'bandwidth') {
+    inputs = inputBlock('calc-a','Data transferred (MB)','500','500') + inputBlock('calc-b','Time (seconds)','10','10');
+  } else if (t === 'littles') {
+    inputs = inputBlock('calc-a','RPS','500','500') + inputBlock('calc-b','Avg response time (s)','0.2','0.2');
+  } else if (t === 'errbudget') {
+    inputs = inputBlock('calc-a','SLO target (%)','99.9','99.9');
+  }
+
+  return `<div style="margin-top:4px">
+    <p class="section-title" style="margin-bottom:10px">Calculator</p>
+    ${inputs}
+    <div class="calc-result" id="calc-out-${m.id}">—<span class="result-unit" id="calc-unit-${m.id}"></span></div>
+  </div>`;
+}
+
+function updateResult(id) {
+  const m = METRICS.find(x => x.id === id);
+  if (!m) return;
+  const r = calcResult(m);
+  const el = document.getElementById('calc-out-' + id);
+  const eu = document.getElementById('calc-unit-' + id);
+  if (el) el.childNodes[0].textContent = r.val;
+  if (eu) eu.textContent = ' ' + r.unit;
+}
+
+function renderDetail() {
+  const m = METRICS.find(x => x.id === activeId);
+  if (!m) return;
+  const tags = m.tags.map(t => `<span class="tag tag-${t.c}">${t.l}</span>`).join('');
+  const benches = m.benchmarks.map(b =>
+    `<div class="bench-row"><span>${b[0]}</span><span class="bench-${b[2]}">${b[1]}</span></div>`
+  ).join('');
+
+  document.getElementById('detail-panel').innerHTML = `
+    <p class="detail-name">${m.name}</p>
+    <p class="detail-aka">${m.aka}</p>
+    <div class="tag-row">${tags}</div>
+    <p class="detail-desc">${m.desc}</p>
+    <div class="formula-box">${m.formula}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+      <div>
+        <p class="section-title">Industry benchmarks</p>
+        ${benches}
+      </div>
+      <div id="calc-area">${buildCalc(m)}</div>
+    </div>
+  `;
+  const r = calcResult(m);
+  const el = document.getElementById('calc-out-' + m.id);
+  const eu = document.getElementById('calc-unit-' + m.id);
+  if (el && r.val !== '—') { el.childNodes[0].textContent = r.val; if(eu) eu.textContent = ' ' + r.unit; }
+}
+
+renderCards();
+renderDetail();
+</script>
