@@ -630,3 +630,1075 @@ setActiveNav('p50');
 </script>
 </body>
 </html>
+
+<hr>
+<hr>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>System Design Framework</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:     #07080a;
+  --bg2:    #0e1014;
+  --bg3:    #141820;
+  --card:   #111318;
+  --border: #1e2330;
+  --b2:     #2a3040;
+  --text:   #dce4f0;
+  --muted:  #6b7a95;
+  --dim:    #3d4a60;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+  --display: 'Syne', sans-serif;
+
+  /* Phase accent colors */
+  --c1: #e8d5b0; /* Requirements   - warm parchment */
+  --c2: #7ec8e3; /* Scale           - sky */
+  --c3: #a8e6cf; /* API             - mint */
+  --c4: #ffd3b6; /* Data            - peach */
+  --c5: #c3aed6; /* Architecture    - lavender */
+  --c6: #f9c74f; /* Deep Dives      - amber */
+  --c7: #f08080; /* NFRs            - coral */
+  --c8: #90e0ef; /* Ops             - ice */
+  --c9: #b5e48c; /* Trade-offs      - lime */
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+/* ══════════════════════════════════
+   HERO
+══════════════════════════════════ */
+.hero {
+  padding: 72px 60px 56px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute;
+  top:-120px; right:-80px;
+  width:500px; height:500px;
+  background: radial-gradient(circle, rgba(124,200,227,.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.hero-title span { color: var(--c2); }
+.hero-sub {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--muted);
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.hero-chips {
+  display: flex; gap: 10px; flex-wrap: wrap;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: all .2s;
+}
+.chip:hover, .chip.active {
+  color: var(--text);
+  border-color: var(--b2);
+  background: var(--bg3);
+}
+
+/* ══════════════════════════════════
+   LAYOUT
+══════════════════════════════════ */
+.body-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: calc(100vh - 200px);
+}
+.toc {
+  border-right: 1px solid var(--border);
+  padding: 28px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.toc::-webkit-scrollbar { width: 3px; }
+.toc::-webkit-scrollbar-thumb { background: var(--border); border-radius:2px; }
+
+.toc-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 0 24px;
+  margin-bottom: 8px;
+}
+.toc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 24px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: all .15s;
+  text-decoration: none;
+}
+.toc-item:hover { background: var(--bg2); }
+.toc-item.active { border-left-color: currentColor; background: rgba(255,255,255,.03); }
+.toc-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  min-width: 18px;
+}
+.toc-name { font-size: 12.5px; color: var(--muted); }
+.toc-item.active .toc-name { color: var(--text); }
+
+.content { padding: 0; }
+
+/* ══════════════════════════════════
+   PHASE SECTIONS
+══════════════════════════════════ */
+.phase {
+  border-bottom: 1px solid var(--border);
+  padding: 52px 56px;
+}
+.phase-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+.phase-num {
+  font-family: var(--display);
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  opacity: .12;
+  min-width: 60px;
+  color: var(--text);
+}
+.phase-meta { flex: 1; }
+.phase-badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.phase-title {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  margin-bottom: 8px;
+}
+.phase-desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 580px;
+  line-height: 1.7;
+}
+
+/* question cards grid */
+.q-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.q-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  transition: border-color .2s, transform .2s;
+  cursor: default;
+}
+.q-card:hover {
+  border-color: var(--b2);
+  transform: translateY(-1px);
+}
+.q-card-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+.q-card-q {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+.q-card-why {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 300;
+  line-height: 1.6;
+}
+
+/* sub-section heading */
+.sub-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 28px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sub-head::after {
+  content:'';
+  flex:1;
+  height:1px;
+  background: var(--border);
+}
+
+/* parameter table */
+.param-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  margin-bottom: 24px;
+}
+.param-table th {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-align: left;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.param-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.param-table tr:last-child td { border-bottom: none; }
+.param-table tr:hover td { background: var(--bg2); }
+.param-name { font-weight: 500; color: var(--text); }
+.param-val { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.param-desc { color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+/* callout box */
+.callout {
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13px;
+  line-height: 1.65;
+  margin: 20px 0;
+  border-left: 3px solid;
+}
+.callout-tip  { background: rgba(168,230,207,.06); border-color: var(--c3); color: #a8e6cf; }
+.callout-warn { background: rgba(249,199,79,.06);  border-color: var(--c6); color: var(--c6); }
+.callout-info { background: rgba(126,200,227,.06); border-color: var(--c2); color: var(--c2); }
+
+/* checklist */
+.checklist { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.checklist li::before {
+  content: '○';
+  font-size: 12px;
+  color: var(--dim);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* tradeoff matrix */
+.matrix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.m-cell {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.m-cell-title { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.m-cell-body  { font-size: 11.5px; color: var(--muted); font-weight: 300; line-height: 1.6; }
+
+/* progress bar for priority */
+.prio { display: flex; align-items: center; gap: 8px; }
+.prio-bar { flex: 1; height: 3px; background: var(--border); border-radius: 2px; }
+.prio-fill { height: 100%; border-radius: 2px; }
+
+/* footer */
+.footer {
+  padding: 40px 56px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-text { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+@media (max-width: 900px) {
+  .body-layout { grid-template-columns: 1fr; }
+  .toc { display: none; }
+  .hero, .phase { padding: 40px 24px; }
+  .q-grid { grid-template-columns: 1fr; }
+  .matrix { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">// system design · master framework</div>
+  <h1 class="hero-title">The Complete<br/><span>Design Playbook</span></h1>
+  <p class="hero-sub">Every question to ask, every parameter to estimate, every trade-off to consider — structured as a repeatable framework for any system design problem.</p>
+  <div class="hero-chips">
+    <span class="chip active">All phases</span>
+    <span class="chip">Requirements</span>
+    <span class="chip">Scale estimation</span>
+    <span class="chip">Architecture</span>
+    <span class="chip">Deep dives</span>
+    <span class="chip">Trade-offs</span>
+  </div>
+</div>
+
+<div class="body-layout">
+
+<!-- TOC -->
+<nav class="toc">
+  <div class="toc-label" style="margin-bottom:16px">Phases</div>
+  <a class="toc-item" href="#phase1" style="color:var(--c1)"><span class="toc-num">01</span><span class="toc-name">Requirements clarification</span></a>
+  <a class="toc-item" href="#phase2" style="color:var(--c2)"><span class="toc-num">02</span><span class="toc-name">Scale estimation</span></a>
+  <a class="toc-item" href="#phase3" style="color:var(--c3)"><span class="toc-num">03</span><span class="toc-name">API design</span></a>
+  <a class="toc-item" href="#phase4" style="color:var(--c4)"><span class="toc-num">04</span><span class="toc-name">Data model & storage</span></a>
+  <a class="toc-item" href="#phase5" style="color:var(--c5)"><span class="toc-num">05</span><span class="toc-name">High level architecture</span></a>
+  <a class="toc-item" href="#phase6" style="color:var(--c6)"><span class="toc-num">06</span><span class="toc-name">Component deep dives</span></a>
+  <a class="toc-item" href="#phase7" style="color:var(--c7)"><span class="toc-num">07</span><span class="toc-name">Non-functional requirements</span></a>
+  <a class="toc-item" href="#phase8" style="color:var(--c8)"><span class="toc-num">08</span><span class="toc-name">Ops & reliability</span></a>
+  <a class="toc-item" href="#phase9" style="color:var(--c9)"><span class="toc-num">09</span><span class="toc-name">Trade-offs & alternatives</span></a>
+</nav>
+
+<div class="content">
+
+<!-- ══ PHASE 1 ══ -->
+<section class="phase" id="phase1">
+  <div class="phase-header">
+    <div class="phase-num">01</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(232,213,176,.1);color:var(--c1)">First 5–10 minutes</div>
+      <div class="phase-title" style="color:var(--c1)">Requirements Clarification</div>
+      <div class="phase-desc">Never start drawing boxes until you've asked these. An interviewer wants to see that you scope the problem before solving it. Requirements define everything downstream.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Functional requirements — what the system must do</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Core use case</div>
+      <div class="q-card-q">What is the primary action users will perform?</div>
+      <div class="q-card-why">Identifies the single most critical path. Design this first, then extend.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">User types</div>
+      <div class="q-card-q">Who are the actors? End users, admins, third-party services?</div>
+      <div class="q-card-why">Different actors have different auth, access, and latency needs. Drives API surface.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Read vs write</div>
+      <div class="q-card-q">Is the system read-heavy, write-heavy, or balanced?</div>
+      <div class="q-card-why">Determines caching strategy, DB choice, replica configuration, and cost model.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Real-time</div>
+      <div class="q-card-q">Does any feature require real-time or near-real-time updates?</div>
+      <div class="q-card-why">Real-time = WebSockets / SSE / polling, not REST. Changes infra significantly.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Offline / async</div>
+      <div class="q-card-q">Can any operations be asynchronous or eventually consistent?</div>
+      <div class="q-card-why">Async paths unlock event queues, better throughput, and decoupled services.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Search</div>
+      <div class="q-card-q">Is full-text search, geo-search, or faceted filtering required?</div>
+      <div class="q-card-why">Signals need for Elasticsearch / PostGIS / Typesense — not just a DB index.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Media / files</div>
+      <div class="q-card-q">Are images, videos, or binary files part of the system?</div>
+      <div class="q-card-why">Triggers blob storage (S3), CDN, pre-signed URLs, and compression pipelines.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Notifications</div>
+      <div class="q-card-q">Does the system need push, email, or SMS notifications?</div>
+      <div class="q-card-why">Adds notification service, delivery guarantees, and unsubscribe/compliance concerns.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Payments</div>
+      <div class="q-card-q">Are financial transactions in scope? Refunds, splits, subscriptions?</div>
+      <div class="q-card-why">Triggers PCI DSS scope, idempotency, Saga pattern, and gateway integration.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Geographic scope</div>
+      <div class="q-card-q">Single region, multi-region, or global deployment?</div>
+      <div class="q-card-why">Multi-region changes latency targets, data residency, failover strategy, and cost 10×.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Non-functional requirements — constraints and quality attributes</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Availability SLA</div>
+      <div class="q-card-q">What is the required uptime? 99.9%, 99.99%, 99.999%?</div>
+      <div class="q-card-why">Each "nine" costs exponentially more. 99.99% = 52 min downtime/year vs 99.999% = 5 min.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Latency target</div>
+      <div class="q-card-q">What is the acceptable p99 response time for critical paths?</div>
+      <div class="q-card-why">Drives caching, DB indexing, CDN placement, and what you can afford async.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Consistency</div>
+      <div class="q-card-q">Strong or eventual consistency? What can tolerate stale reads?</div>
+      <div class="q-card-why">Strong consistency is expensive at scale. Inventory / payments need it; feeds don't.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Durability</div>
+      <div class="q-card-q">Can any data be lost? What is the acceptable RPO?</div>
+      <div class="q-card-why">RPO = Recovery Point Objective. Zero data loss requires synchronous replication.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Security</div>
+      <div class="q-card-q">What compliance standards apply? GDPR, PCI DSS, HIPAA, SOC 2?</div>
+      <div class="q-card-why">Each standard mandates specific encryption, audit logging, and data handling controls.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Cost constraints</div>
+      <div class="q-card-q">Is there a budget ceiling? On-prem vs cloud preference?</div>
+      <div class="q-card-why">Cost changes every architecture decision — managed services vs self-hosted, storage tiers.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-tip">
+    💡 <strong>Interview tip:</strong> Spend exactly 5 minutes here. Write your assumptions on the whiteboard. Say out loud: "I'll assume X, Y, Z — let me know if those are wrong." This shows senior-level thinking.
+  </div>
+</section>
+
+<!-- ══ PHASE 2 ══ -->
+<section class="phase" id="phase2">
+  <div class="phase-header">
+    <div class="phase-num">02</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(126,200,227,.1);color:var(--c2)">Back-of-envelope estimation</div>
+      <div class="phase-title" style="color:var(--c2)">Scale Estimation</div>
+      <div class="phase-desc">Quantify the system before architecting it. Numbers decide everything — DB choice, sharding strategy, cache sizing, number of servers, network bandwidth.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Traffic estimation</div>
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>How to calculate</th><th>Typical values</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td class="param-name">DAU / MAU</td><td class="param-val">Given or estimate from MAU × 0.1–0.3</td><td class="param-val">1K – 1B users</td><td class="param-desc">Baseline for all other calculations</td></tr>
+      <tr><td class="param-name">Read RPS</td><td class="param-val">DAU × reads/day / 86,400</td><td class="param-val">100 – 1M RPS</td><td class="param-desc">Sizes load balancers, app server fleet</td></tr>
+      <tr><td class="param-name">Write RPS</td><td class="param-val">DAU × writes/day / 86,400</td><td class="param-val">10 – 100K TPS</td><td class="param-desc">Sizes DB write capacity, Kafka partitions</td></tr>
+      <tr><td class="param-name">Peak multiplier</td><td class="param-val">Average RPS × 2–5× for peak</td><td class="param-val">2× – 10×</td><td class="param-desc">Provision for peak, not average</td></tr>
+      <tr><td class="param-name">Read:Write ratio</td><td class="param-val">Reads / Writes per day</td><td class="param-val">80:20 or 95:5</td><td class="param-desc">Drives read replica count and caching ROI</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-head">Storage estimation</div>
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>How to calculate</th><th>Typical values</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td class="param-name">Data per record</td><td class="param-val">Sum all field sizes in bytes</td><td class="param-val">100 B – 10 KB</td><td class="param-desc">Multiply by record count → total storage</td></tr>
+      <tr><td class="param-name">Daily new data</td><td class="param-val">Writes/day × bytes/record</td><td class="param-val">GB – TB/day</td><td class="param-desc">Storage growth rate → provisioning timeline</td></tr>
+      <tr><td class="param-name">5-year storage</td><td class="param-val">Daily data × 365 × 5</td><td class="param-val">TB – PB</td><td class="param-desc">Decides sharding, tiering, archival strategy</td></tr>
+      <tr><td class="param-name">Replication factor</td><td class="param-val">Storage × 3 (typical)</td><td class="param-val">3× raw</td><td class="param-desc">Real disk cost is 3× your data size</td></tr>
+      <tr><td class="param-name">Media storage</td><td class="param-val">Uploads/day × avg file size</td><td class="param-val">KB – GB per file</td><td class="param-desc">Goes to S3/Blob, not relational DB</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-head">Memory & bandwidth estimation</div>
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>How to calculate</th><th>Typical values</th></tr></thead>
+    <tbody>
+      <tr><td class="param-name">Cache size needed</td><td class="param-val">Hot data % × total data size (20% rule)</td><td class="param-val">GB – TB Redis</td></tr>
+      <tr><td class="param-name">Network bandwidth</td><td class="param-val">RPS × avg response size (bytes) × 8 / 1M = Mbps</td><td class="param-val">100 Mbps – 100 Gbps</td></tr>
+      <tr><td class="param-name">Server count</td><td class="param-val">Peak RPS / RPS per server (assume 1K–10K)</td><td class="param-val">2 – 1000 nodes</td></tr>
+      <tr><td class="param-name">DB connections</td><td class="param-val">App servers × threads per server</td><td class="param-val">100 – 10K conns</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    🔢 <strong>Quick number cheat-sheet:</strong> 1 day = 86,400 s ≈ 100K s &nbsp;|&nbsp; 1 month ≈ 2.5M s &nbsp;|&nbsp; 1 year ≈ 31.5M s &nbsp;|&nbsp; 1 KB = 10³ B &nbsp;|&nbsp; 1 MB = 10⁶ B &nbsp;|&nbsp; 1 GB = 10⁹ B
+  </div>
+</section>
+
+<!-- ══ PHASE 3 ══ -->
+<section class="phase" id="phase3">
+  <div class="phase-header">
+    <div class="phase-num">03</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(168,230,207,.1);color:var(--c3)">Define the contract</div>
+      <div class="phase-title" style="color:var(--c3)">API Design</div>
+      <div class="phase-desc">Define the interface before the internals. A well-designed API surface reveals the system's true scope and prevents scope creep mid-design.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Questions to ask about the API</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Protocol</div>
+      <div class="q-card-q">REST, GraphQL, gRPC, or WebSocket? Or a mix?</div>
+      <div class="q-card-why">REST = simple CRUD. GraphQL = flexible queries. gRPC = high-perf internal. WS = real-time push.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Versioning</div>
+      <div class="q-card-q">How will breaking changes be managed? /v1/, header versioning?</div>
+      <div class="q-card-why">Without versioning, any change breaks clients. Define strategy early.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Idempotency</div>
+      <div class="q-card-q">Are write endpoints idempotent? How are duplicate requests handled?</div>
+      <div class="q-card-why">Critical for payments and bookings — retries must not double-charge or double-book.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Pagination</div>
+      <div class="q-card-q">Offset-based, cursor-based, or keyset pagination?</div>
+      <div class="q-card-why">Offset breaks on concurrent inserts. Cursor pagination is consistent for real-time feeds.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Rate limiting</div>
+      <div class="q-card-q">Per user, per IP, per API key? What are the limits?</div>
+      <div class="q-card-why">Prevents abuse and protects downstream services. Token bucket or sliding window.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Auth model</div>
+      <div class="q-card-q">JWT, OAuth 2.0, API keys, mTLS for internal services?</div>
+      <div class="q-card-why">External APIs use JWT/OAuth. Internal service-to-service uses mTLS or service mesh.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">API Gateway responsibilities — always cover these</div>
+  <ul class="checklist">
+    <li>Authentication & JWT validation</li>
+    <li>Rate limiting & throttling</li>
+    <li>Request routing to services</li>
+    <li>SSL/TLS termination</li>
+    <li>Request / response transformation</li>
+    <li>Load balancing across instances</li>
+    <li>Canary & A/B routing</li>
+    <li>API versioning enforcement</li>
+    <li>DDoS protection & WAF</li>
+    <li>Observability (access logs, metrics)</li>
+    <li>Circuit breaker / timeout enforcement</li>
+    <li>Caching at edge</li>
+  </ul>
+</section>
+
+<!-- ══ PHASE 4 ══ -->
+<section class="phase" id="phase4">
+  <div class="phase-header">
+    <div class="phase-num">04</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(255,211,182,.1);color:var(--c4)">Choose the right store</div>
+      <div class="phase-title" style="color:var(--c4)">Data Model & Storage</div>
+      <div class="phase-desc">The database choice is often the most consequential architecture decision. Ask these questions before picking SQL vs NoSQL vs graph vs time-series.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Data model questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Data structure</div>
+      <div class="q-card-q">Is the data relational, hierarchical, graph-like, or schema-less?</div>
+      <div class="q-card-why">Relational → RDBMS. Hierarchical docs → MongoDB. Graph → Neo4j. Schema-less → DynamoDB.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Query patterns</div>
+      <div class="q-card-q">What are the top 3 most frequent query patterns?</div>
+      <div class="q-card-why">Design schema around queries, not entities. Denormalize if necessary for read performance.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Joins</div>
+      <div class="q-card-q">Are there frequent multi-table joins? Across large datasets?</div>
+      <div class="q-card-why">Heavy joins at scale → consider denormalization, CQRS, or pre-computed views.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">ACID requirements</div>
+      <div class="q-card-q">Which operations need atomic, transactional guarantees?</div>
+      <div class="q-card-why">Payments and inventory need ACID. User feeds and analytics can tolerate eventual consistency.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Time-series</div>
+      <div class="q-card-q">Is any data append-only or time-indexed (metrics, events, logs)?</div>
+      <div class="q-card-why">Time-series DBs (InfluxDB, TimescaleDB) are 10× more efficient for this pattern.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Hot vs cold data</div>
+      <div class="q-card-q">What percentage of data is accessed frequently vs archived?</div>
+      <div class="q-card-why">Tiered storage: hot → SSD, warm → HDD, cold → S3 Glacier. Cuts costs drastically.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Database selection guide</div>
+  <table class="param-table">
+    <thead><tr><th>Use case</th><th>Best choice</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="param-name">Transactional data</td><td class="param-val">PostgreSQL / MySQL</td><td class="param-desc">ACID, complex queries, mature ecosystem</td></tr>
+      <tr><td class="param-name">Document / catalog</td><td class="param-val">MongoDB / Firestore</td><td class="param-desc">Flexible schema, nested documents, horizontal scale</td></tr>
+      <tr><td class="param-name">Key-value / cache</td><td class="param-val">Redis / DynamoDB</td><td class="param-desc">Sub-millisecond lookups, TTL, sorted sets</td></tr>
+      <tr><td class="param-name">Full-text search</td><td class="param-val">Elasticsearch / Typesense</td><td class="param-desc">Inverted index, relevance scoring, facets</td></tr>
+      <tr><td class="param-name">Geo-spatial</td><td class="param-val">PostgreSQL + PostGIS</td><td class="param-desc">Radius queries, polygons, spatial indexes</td></tr>
+      <tr><td class="param-name">Graph relationships</td><td class="param-val">Neo4j / Amazon Neptune</td><td class="param-desc">Friend-of-friend, recommendations, fraud rings</td></tr>
+      <tr><td class="param-name">Time-series metrics</td><td class="param-val">InfluxDB / TimescaleDB</td><td class="param-desc">High ingest rate, time-window aggregations</td></tr>
+      <tr><td class="param-name">Analytics / OLAP</td><td class="param-val">Snowflake / BigQuery / Redshift</td><td class="param-desc">Columnar storage, massive scans, SQL analytics</td></tr>
+      <tr><td class="param-name">Wide-column</td><td class="param-val">Cassandra / HBase</td><td class="param-desc">Massive write throughput, linear scale, no SPOF</td></tr>
+    </tbody>
+  </table>
+
+  <div class="sub-head">Caching strategy questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Cache-aside vs write-through</div>
+      <div class="q-card-q">Should the app populate the cache, or the DB write through?</div>
+      <div class="q-card-why">Cache-aside = lazy load on miss. Write-through = always consistent but higher write latency.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">TTL strategy</div>
+      <div class="q-card-q">What is the acceptable staleness? How long should each key live?</div>
+      <div class="q-card-why">Short TTL = consistent, more DB hits. Long TTL = stale risk but better offload.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Cache eviction</div>
+      <div class="q-card-q">LRU, LFU, or random eviction when cache is full?</div>
+      <div class="q-card-why">LRU evicts least-recently-used. LFU evicts least-frequently-used. Depends on access pattern.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Cache invalidation</div>
+      <div class="q-card-q">How is the cache cleared when source data changes?</div>
+      <div class="q-card-why">"There are only two hard problems in CS: cache invalidation and naming things."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PHASE 5 ══ -->
+<section class="phase" id="phase5">
+  <div class="phase-header">
+    <div class="phase-num">05</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(195,174,214,.1);color:var(--c5)">Draw the boxes</div>
+      <div class="phase-title" style="color:var(--c5)">High Level Architecture</div>
+      <div class="phase-desc">Now draw the system. Start with the happy path data flow, then add failure modes, scaling, and cross-cutting concerns.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Architecture pattern questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Monolith vs microservices</div>
+      <div class="q-card-q">What is the team size and deployment frequency?</div>
+      <div class="q-card-why">Microservices pay off at scale (>50 engineers). For small teams, a modular monolith is faster.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Sync vs async</div>
+      <div class="q-card-q">Which service calls must be synchronous? Which can be async?</div>
+      <div class="q-card-why">Async (Kafka/SQS) decouples services, improves resilience, increases throughput.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">CQRS</div>
+      <div class="q-card-q">Should reads and writes have separate models / services?</div>
+      <div class="q-card-why">CQRS separates read-optimized views from write-optimized models. Great for event sourcing.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Event sourcing</div>
+      <div class="q-card-q">Should state be derived from an immutable event log?</div>
+      <div class="q-card-why">Useful for audit trails, replaying state, and temporal queries. Higher complexity cost.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Service mesh</div>
+      <div class="q-card-q">How will service-to-service communication be managed at scale?</div>
+      <div class="q-card-why">Istio / Linkerd handles mTLS, retries, circuit breaking, observability between services.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Multi-tenancy</div>
+      <div class="q-card-q">Are multiple customers isolated in the same infrastructure?</div>
+      <div class="q-card-why">Drives schema design (shared vs isolated DB per tenant) and access control model.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Core architecture components — cover all in every design</div>
+  <ul class="checklist">
+    <li>Client (mobile / web / IoT)</li>
+    <li>CDN (static assets, edge caching)</li>
+    <li>DNS + load balancer</li>
+    <li>API Gateway (auth, routing, rate-limit)</li>
+    <li>Core microservices / application tier</li>
+    <li>Message queue / event bus (Kafka, SQS)</li>
+    <li>Cache layer (Redis, Memcached)</li>
+    <li>Primary database (OLTP)</li>
+    <li>Read replicas / secondary DBs</li>
+    <li>Object / blob storage (S3)</li>
+    <li>Search service (Elasticsearch)</li>
+    <li>Notification service (push, email)</li>
+    <li>Monitoring & alerting (Prometheus)</li>
+    <li>Logging (ELK / CloudWatch)</li>
+    <li>Distributed tracing (Jaeger / Zipkin)</li>
+    <li>CI/CD pipeline</li>
+  </ul>
+</section>
+
+<!-- ══ PHASE 6 ══ -->
+<section class="phase" id="phase6">
+  <div class="phase-header">
+    <div class="phase-num">06</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(249,199,79,.1);color:var(--c6)">Go deep</div>
+      <div class="phase-title" style="color:var(--c6)">Component Deep Dives</div>
+      <div class="phase-desc">Pick the 2–3 most interesting or risky components and go deep. This is where senior candidates differentiate themselves.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Scalability deep dive questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Horizontal scaling</div>
+      <div class="q-card-q">How does each service scale out? Are there stateful components?</div>
+      <div class="q-card-why">Stateless services scale horizontally. Stateful (sessions, locks) need sticky routing or distributed state.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Database sharding</div>
+      <div class="q-card-q">What is the sharding key? How are hotspots avoided?</div>
+      <div class="q-card-why">Bad shard key = one shard gets all traffic. Good keys distribute writes evenly (hashed user_id).</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Hotspot mitigation</div>
+      <div class="q-card-q">What happens when a celebrity / viral entity gets 1M requests?</div>
+      <div class="q-card-why">Famous users need special caching, read fanout strategies, or dedicated resources.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Auto-scaling</div>
+      <div class="q-card-q">What metric triggers scale-out? CPU, RPS, queue depth?</div>
+      <div class="q-card-why">CPU is a lagging indicator. RPS or queue depth are leading indicators — react faster.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Connection pooling</div>
+      <div class="q-card-q">How are DB connections managed at high concurrency?</td>
+      <div class="q-card-why">Without pooling, 1000 app threads = 1000 DB connections. PgBouncer / HikariCP solve this.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Backpressure</div>
+      <div class="q-card-q">What happens when downstream services are overloaded?</div>
+      <div class="q-card-why">Circuit breaker + backpressure prevents cascade failures. Fail fast > timeout storms.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Concurrency & consistency deep dive</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Race conditions</div>
+      <div class="q-card-q">What happens if two users try to book / buy the same resource simultaneously?</div>
+      <div class="q-card-why">Distributed lock (Redis SETNX) or optimistic locking (DB version column) required.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Distributed transactions</div>
+      <div class="q-card-q">How are multi-service operations made atomic?</div>
+      <div class="q-card-why">Saga pattern (compensating transactions) preferred over 2PC which blocks under failure.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Idempotency keys</div>
+      <div class="q-card-q">How are duplicate API calls detected and de-duped?</div>
+      <div class="q-card-why">Client sends idempotency key → server stores result → replay returns same result, no double action.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Leader election</div>
+      <div class="q-card-q">If a component needs a single active instance, how is the leader chosen?</div>
+      <div class="q-card-why">ZooKeeper, etcd, or Redis-based leader election. Needed for schedulers, cron jobs, coordinators.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PHASE 7 ══ -->
+<section class="phase" id="phase7">
+  <div class="phase-header">
+    <div class="phase-num">07</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(240,128,128,.1);color:var(--c7)">Cross-cutting concerns</div>
+      <div class="phase-title" style="color:var(--c7)">Non-Functional Requirements</div>
+      <div class="phase-desc">These are the "-ilities" — reliability, security, maintainability. They don't appear on the happy path but determine whether the system survives production.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Security questions — ask every time</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Authentication</div>
+      <div class="q-card-q">How are users authenticated? Token lifetime? MFA?</div>
+      <div class="q-card-why">Short-lived JWTs (15 min) + refresh token rotation. MFA for high-value actions.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Authorization</div>
+      <div class="q-card-q">RBAC, ABAC, or ReBAC? How are permissions enforced?</div>
+      <div class="q-card-why">RBAC = roles. ABAC = attribute-based. ReBAC = relationship-based (Google Zanzibar).</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Encryption</div>
+      <div class="q-card-q">TLS in transit, AES-256 at rest? Field-level encryption for PII?</div>
+      <div class="q-card-why">TLS 1.3 for transport. AES-256 for storage. Field-level for SSN, card numbers, health data.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Secrets management</div>
+      <div class="q-card-q">How are DB credentials, API keys, and certs managed?</div>
+      <div class="q-card-why">Vault / AWS Secrets Manager. Never in code. Rotate automatically. Audit on access.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Input validation</div>
+      <div class="q-card-q">How is SQL injection, XSS, and SSRF prevented?</div>
+      <div class="q-card-why">Parameterized queries, CSP headers, allowlisting outbound requests. WAF at edge.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Audit logging</div>
+      <div class="q-card-q">What actions must be logged for compliance? Who can read the logs?</div>
+      <div class="q-card-why">Immutable append-only audit trail. CloudTrail + tamper-evident storage for compliance.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Compliance parameters</div>
+  <table class="param-table">
+    <thead><tr><th>Standard</th><th>Applies to</th><th>Key requirements</th></tr></thead>
+    <tbody>
+      <tr><td class="param-name">GDPR</td><td class="param-val">EU user data</td><td class="param-desc">Consent, right to erasure, data portability, breach notification 72h, DPA agreements</td></tr>
+      <tr><td class="param-name">PCI DSS</td><td class="param-val">Card payments</td><td class="param-desc">No raw PAN stored, tokenization, TLS, quarterly pen-tests, network segmentation</td></tr>
+      <tr><td class="param-name">HIPAA</td><td class="param-val">US health data</td><td class="param-desc">PHI encryption, access controls, audit logs, BAA agreements with vendors</td></tr>
+      <tr><td class="param-name">SOC 2</td><td class="param-val">SaaS / B2B</td><td class="param-desc">Security, availability, confidentiality controls. Annual third-party audit.</td></tr>
+      <tr><td class="param-name">ISO 27001</td><td class="param-val">Information security</td><td class="param-desc">ISMS, risk register, asset inventory, incident response plan</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══ PHASE 8 ══ -->
+<section class="phase" id="phase8">
+  <div class="phase-header">
+    <div class="phase-num">08</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(144,224,239,.1);color:var(--c8)">Keep it running</div>
+      <div class="phase-title" style="color:var(--c8)">Ops, Reliability & Observability</div>
+      <div class="phase-desc">A system that can't be observed can't be operated. Design for failure from the start — not as an afterthought.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Reliability questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Fault tolerance</div>
+      <div class="q-card-q">What happens when any single component fails?</div>
+      <div class="q-card-why">No single point of failure. Every service should have ≥2 replicas across ≥2 AZs.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Circuit breaker</div>
+      <div class="q-card-q">How does the system stop cascading failures?</div>
+      <div class="q-card-why">Circuit breaker opens on repeated failures, fast-fails callers, gives downstream time to recover.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Retry strategy</div>
+      <div class="q-card-q">Exponential backoff with jitter for all retries?</div>
+      <div class="q-card-why">Synchronized retries amplify load. Jitter spreads retries, reducing thundering herd.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Graceful degradation</div>
+      <div class="q-card-q">Which features can be disabled to protect core functionality?</div>
+      <div class="q-card-why">Feature flags let you shed non-critical load under stress. Core path must always work.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Disaster recovery</div>
+      <div class="q-card-q">What is the RTO and RPO? Active-active or active-passive?</div>
+      <div class="q-card-why">RTO = time to recover. RPO = data loss tolerance. Active-active costs 2× but near-zero RTO.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Chaos engineering</div>
+      <div class="q-card-q">How are failure scenarios validated in production?</div>
+      <div class="q-card-why">Chaos Monkey, fault injection. Discover failures in drills, not during incidents.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Observability pillars — the three must-haves</div>
+  <div class="matrix">
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c8)">📊 Metrics</div>
+      <div class="m-cell-body">Prometheus / Grafana / CloudWatch. Track RPS, p99 latency, error rate, CPU, memory. Set alerts on SLO burn rate. Use RED method (Rate, Errors, Duration) per service.</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c8)">📋 Logs</div>
+      <div class="m-cell-body">Structured JSON logs. ELK stack or Datadog. Correlation IDs across services. Log levels: ERROR (page on-call), WARN (alert), INFO (operational), DEBUG (local only).</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c8)">🔍 Traces</div>
+      <div class="m-cell-body">Jaeger / Zipkin / AWS X-Ray. Trace ID propagated across all service hops. Shows exactly which service added latency to a slow request. Critical for debugging microservices.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Deployment strategy questions</div>
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-card-label">Deployment pattern</div>
+      <div class="q-card-q">Blue-green, canary, rolling, or feature flags?</div>
+      <div class="q-card-why">Canary: 1% → 10% → 100% with automatic rollback on error rate spike. Safest for production.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-card-label">Schema migrations</div>
+      <div class="q-card-q">How are DB schema changes deployed without downtime?</div>
+      <div class="q-card-why">Expand-contract pattern: add new column (expand), migrate data, drop old column (contract). Never both in one deploy.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PHASE 9 ══ -->
+<section class="phase" id="phase9">
+  <div class="phase-header">
+    <div class="phase-num">09</div>
+    <div class="phase-meta">
+      <div class="phase-badge" style="background:rgba(181,228,140,.1);color:var(--c9)">Show wisdom</div>
+      <div class="phase-title" style="color:var(--c9)">Trade-offs & Alternatives</div>
+      <div class="phase-desc">The final step separates senior candidates from mid-level ones. Acknowledge that every decision has a cost. Show that you made deliberate choices, not defaults.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Core system design trade-offs</div>
+  <div class="matrix">
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">Consistency vs Availability</div>
+      <div class="m-cell-body">CAP theorem: under network partition, choose one. AP = always available, maybe stale (DNS, shopping carts). CP = consistent, may reject requests (banking, inventory).</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">Latency vs Throughput</div>
+      <div class="m-cell-body">Batching increases throughput but adds latency. Real-time responses have lower throughput. Choose based on user experience requirement — interactive vs background processing.</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">Normalisation vs Denormalisation</div>
+      <div class="m-cell-body">Normalized = less storage, complex joins, slower reads. Denormalized = fast reads, storage overhead, complex writes. Denormalize for read-heavy hot paths.</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">Push vs Pull</div>
+      <div class="m-cell-body">Push (fan-out on write) = fast reads, expensive writes for high-follower users. Pull (fan-out on read) = cheap writes, expensive reads. Hybrid: push for regular users, pull for celebrities.</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">SQL vs NoSQL</div>
+      <div class="m-cell-body">SQL = ACID, complex queries, vertical scale, relational integrity. NoSQL = horizontal scale, flexible schema, eventual consistency. Most real systems use both.</div>
+    </div>
+    <div class="m-cell">
+      <div class="m-cell-title" style="color:var(--c9)">Monolith vs Microservices</div>
+      <div class="m-cell-body">Monolith = simpler ops, single deploy, shared memory. Microservices = independent scale/deploy, polyglot, distributed tracing overhead. Don't split until you feel the monolith's pain.</div>
+    </div>
+  </div>
+
+  <div class="sub-head">Final checklist — before you close the design</div>
+  <ul class="checklist">
+    <li>Single points of failure eliminated</li>
+    <li>Scale path defined (3× and 10× growth)</li>
+    <li>Data consistency model stated</li>
+    <li>Authentication & authorization covered</li>
+    <li>Encryption at rest and in transit</li>
+    <li>API rate limiting in place</li>
+    <li>Circuit breakers and retries defined</li>
+    <li>Monitoring / alerting / tracing mentioned</li>
+    <li>DB backup and recovery plan</li>
+    <li>Deployment strategy (zero downtime)</li>
+    <li>Trade-offs explicitly acknowledged</li>
+    <li>Bottleneck identified and addressed</li>
+  </ul>
+
+  <div class="callout callout-warn">
+    ⚠️ <strong>The one thing interviewers test for:</strong> Do you know <em>why</em> you made each choice? "I used Kafka because we need async processing and at-least-once delivery with replay capability" beats "I used Kafka because it's popular." Every choice should have a specific justification tied to your requirements.
+  </div>
+</section>
+
+</div><!-- /content -->
+</div><!-- /body-layout -->
+
+<footer class="footer">
+  <span class="footer-text">// system-design-framework · 9 phases · 80+ questions · complete reference</span>
+  <span class="footer-text">vishal@mastercard · 2026</span>
+</footer>
+
+<script>
+// Scroll spy for TOC
+const sections = document.querySelectorAll('.phase[id]');
+const tocItems = document.querySelectorAll('.toc-item');
+
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      tocItems.forEach(t => {
+        t.classList.toggle('active', t.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-20% 0px -70% 0px' });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
