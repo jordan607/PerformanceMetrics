@@ -422,3 +422,1012 @@ function renderDetail() {
 renderCards();
 renderDetail();
 </script>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Back-of-Envelope Estimation — Interview Masterclass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Epilogue:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:     #080a0c;
+  --bg2:    #0d1117;
+  --bg3:    #111820;
+  --card:   #0f1318;
+  --border: #1c2333;
+  --b2:     #28374a;
+  --text:   #cdd9e5;
+  --muted:  #768390;
+  --dim:    #3d4f61;
+  --mono:   'Space Mono', monospace;
+  --display:'Epilogue', sans-serif;
+  --body:   'Inter', sans-serif;
+  --green:  #3fb950;
+  --blue:   #58a6ff;
+  --orange: #f0883e;
+  --purple: #bc8cff;
+  --teal:   #39c5cf;
+  --red:    #f85149;
+  --yellow: #e3b341;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--bg);color:var(--text);font-size:14px;line-height:1.7;min-height:100vh}
+
+/* ── HEADER ── */
+.site-header{
+  border-bottom:1px solid var(--border);
+  padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;
+  height:56px;
+  position:sticky;top:0;z-index:100;
+  background:rgba(8,10,12,.92);backdrop-filter:blur(14px);
+}
+.site-logo{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.04em}
+.site-logo span{color:var(--green)}
+.nav-pills{display:flex;gap:4px}
+.nav-pill{font-family:var(--mono);font-size:10px;padding:4px 12px;border-radius:4px;color:var(--dim);cursor:pointer;border:none;background:none;letter-spacing:.04em;transition:all .15s}
+.nav-pill:hover{color:var(--text);background:var(--bg3)}
+.nav-pill.active{color:var(--green);background:rgba(63,185,80,.1)}
+
+/* ── HERO ── */
+.hero{
+  padding:72px 64px 56px;
+  border-bottom:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;top:0;right:0;width:600px;height:100%;
+  background:radial-gradient(ellipse at 80% 40%, rgba(63,185,80,.06) 0%, transparent 60%);
+  pointer-events:none;
+}
+.hero-kicker{
+  font-family:var(--mono);font-size:11px;color:var(--green);
+  letter-spacing:.14em;text-transform:uppercase;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-kicker::before{content:'';display:block;width:24px;height:1px;background:var(--green)}
+.hero-h1{
+  font-family:var(--display);font-size:clamp(36px,5.5vw,68px);
+  font-weight:900;letter-spacing:-.03em;line-height:1.0;
+  margin-bottom:20px;
+}
+.hero-h1 .accent{
+  background:linear-gradient(135deg, var(--green) 0%, var(--teal) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-sub{font-size:16px;color:var(--muted);font-weight:300;max-width:560px;line-height:1.75;margin-bottom:40px}
+.hero-numbers{display:flex;gap:0}
+.hnum{padding:16px 24px;border:1px solid var(--border);border-right:none;display:flex;flex-direction:column;gap:2px}
+.hnum:first-child{border-radius:8px 0 0 8px}
+.hnum:last-child{border-right:1px solid var(--border);border-radius:0 8px 8px 0}
+.hnum-val{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green)}
+.hnum-label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── LAYOUT ── */
+.layout{display:grid;grid-template-columns:230px 1fr}
+.toc{border-right:1px solid var(--border);padding:24px 0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.toc::-webkit-scrollbar{width:3px}
+.toc::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.toc-group{margin-bottom:20px}
+.toc-group-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:0 20px;margin-bottom:6px}
+.toc-link{display:block;padding:7px 20px;font-size:12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all .15s}
+.toc-link:hover{color:var(--text);background:var(--bg2)}
+.toc-link.active{color:var(--green);border-left-color:var(--green);background:rgba(63,185,80,.05)}
+
+/* ── CONTENT ── */
+.content{padding:0}
+.section{padding:52px 60px;border-bottom:1px solid var(--border)}
+.section-kicker{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
+.section-title{font-family:var(--display);font-size:28px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px;color:var(--text)}
+.section-desc{font-size:13.5px;color:var(--muted);font-weight:300;max-width:680px;line-height:1.8;margin-bottom:32px}
+
+/* ── CHEAT SHEET TABLE ── */
+.cheat{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:24px}
+.cheat th{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:9px 16px;text-align:left;border-bottom:1px solid var(--border)}
+.cheat td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:top}
+.cheat tr:hover td{background:var(--bg2)}
+.cheat td:first-child{font-family:var(--mono);font-size:11.5px;color:var(--blue);font-weight:700;white-space:nowrap}
+.cheat td:nth-child(2){font-family:var(--mono);font-size:11px;color:var(--green)}
+.cheat td:nth-child(3){color:var(--muted);font-weight:300;line-height:1.6}
+.cheat td:nth-child(4){font-family:var(--mono);font-size:10px;color:var(--orange)}
+
+/* ── LIVE CALCULATOR ── */
+.calc-shell{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.calc-topbar{
+  background:var(--bg3);border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;align-items:center;gap:10px;
+}
+.calc-dot{width:10px;height:10px;border-radius:50%}
+.calc-title{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:6px;letter-spacing:.04em}
+.calc-body{padding:24px 28px}
+.calc-system-select{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.sys-btn{
+  font-family:var(--mono);font-size:11px;padding:6px 14px;border-radius:5px;
+  border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;
+  transition:all .15s;letter-spacing:.03em;
+}
+.sys-btn:hover{border-color:var(--b2);color:var(--text)}
+.sys-btn.active{border-color:var(--green);color:var(--green);background:rgba(63,185,80,.08)}
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+.calc-field{display:flex;flex-direction:column;gap:6px}
+.calc-label{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.06em;text-transform:uppercase}
+.calc-label span{color:var(--muted);font-size:9px;font-style:normal;text-transform:none;letter-spacing:0;margin-left:4px}
+.calc-input{
+  background:var(--bg);border:1px solid var(--border);border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px;
+  outline:none;transition:border-color .15s;
+}
+.calc-input:focus{border-color:var(--green)}
+.calc-output{
+  background:var(--bg);border:1px solid var(--b2);border-radius:10px;padding:20px 24px;
+}
+.calc-output-title{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.calc-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.calc-result{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 16px}
+.calc-result-label{font-size:11px;color:var(--dim);margin-bottom:4px}
+.calc-result-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--green)}
+.calc-result-unit{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:2px}
+.calc-result.warn .calc-result-val{color:var(--orange)}
+.calc-result.crit .calc-result-val{color:var(--red)}
+.calc-result.info .calc-result-val{color:var(--blue)}
+.calc-result.purple .calc-result-val{color:var(--purple)}
+
+/* ── STEP FLOW ── */
+.step-flow{display:flex;flex-direction:column;gap:0;margin-bottom:24px}
+.step{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{
+  font-family:var(--mono);font-size:32px;font-weight:700;
+  color:var(--border);min-width:44px;line-height:1;
+  transition:color .2s;
+}
+.step:hover .step-num{color:var(--green)}
+.step-content{flex:1}
+.step-title{font-family:var(--display);font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px}
+.step-body{font-size:13px;color:var(--muted);font-weight:300;line-height:1.75;margin-bottom:10px}
+.step-example{
+  font-family:var(--mono);font-size:11.5px;
+  background:var(--bg3);border-left:3px solid var(--green);
+  padding:10px 14px;border-radius:0 6px 6px 0;
+  color:var(--text);line-height:1.65;white-space:pre-wrap;
+}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:8px;padding:14px 18px;font-size:13px;line-height:1.7;margin:16px 0;border-left:3px solid}
+.callout-green{background:rgba(63,185,80,.06);border-color:var(--green);color:#7ee787}
+.callout-orange{background:rgba(240,136,62,.06);border-color:var(--orange);color:var(--orange)}
+.callout-blue{background:rgba(88,166,255,.06);border-color:var(--blue);color:var(--blue)}
+.callout-red{background:rgba(248,81,73,.06);border-color:var(--red);color:var(--red)}
+
+/* ── RULES GRID ── */
+.rules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:24px}
+.rule-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px 18px}
+.rule-icon{font-size:22px;margin-bottom:8px}
+.rule-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.rule-body{font-size:12px;color:var(--muted);font-weight:300;line-height:1.65}
+.rule-math{font-family:var(--mono);font-size:11px;color:var(--green);margin-top:8px;display:block}
+
+/* ── NUMBERS CHEAT ── */
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:24px}
+.num-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 18px;display:flex;align-items:center;gap:16px}
+.num-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--blue);min-width:100px}
+.num-label{font-size:12px;color:var(--muted);font-weight:300}
+
+/* ── INTERVIEW FLOW ── */
+.interview-timeline{position:relative;padding-left:36px;margin-bottom:24px}
+.interview-timeline::before{content:'';position:absolute;left:11px;top:8px;bottom:8px;width:1px;background:var(--border)}
+.it-item{position:relative;margin-bottom:20px}
+.it-item::before{
+  content:attr(data-min);position:absolute;left:-36px;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border);
+  font-family:var(--mono);font-size:8px;color:var(--dim);
+  display:flex;align-items:center;justify-content:center;
+  top:3px;
+}
+.it-item.active::before{background:rgba(63,185,80,.15);border-color:var(--green);color:var(--green)}
+.it-title{font-weight:600;color:var(--text);font-size:13.5px;margin-bottom:4px}
+.it-body{font-size:12.5px;color:var(--muted);font-weight:300;line-height:1.65}
+.it-time{font-family:var(--mono);font-size:10px;color:var(--green);margin-bottom:4px}
+
+/* ── MISTAKES TABLE ── */
+.mistake-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px}
+.mistake-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:16px 18px}
+.mistake-bad{font-family:var(--mono);font-size:11px;color:var(--red);margin-bottom:8px;padding:8px 12px;background:rgba(248,81,73,.05);border-radius:5px;line-height:1.5}
+.mistake-good{font-family:var(--mono);font-size:11px;color:var(--green);padding:8px 12px;background:rgba(63,185,80,.05);border-radius:5px;line-height:1.5}
+.mistake-label{font-size:11px;color:var(--dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+
+/* ── WALKTHROUGH ── */
+.walkthrough{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px}
+.wt-header{
+  padding:16px 24px;background:var(--bg3);border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.wt-system{color:var(--blue)}
+.wt-body{padding:24px}
+.wt-line{
+  display:flex;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:12px;align-items:baseline;
+}
+.wt-line:last-child{border-bottom:none}
+.wt-key{color:var(--dim);min-width:240px;flex-shrink:0}
+.wt-op{color:var(--muted);min-width:160px;flex-shrink:0}
+.wt-val{color:var(--green);font-weight:700}
+.wt-note{color:var(--dim);font-size:10px;margin-left:auto}
+.wt-section{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 0 4px;border-bottom:1px solid var(--border);margin-bottom:4px}
+
+.footer{padding:36px 60px;display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--dim)}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .toc{display:none}
+  .hero,.section{padding:36px 20px}
+  .calc-grid,.mistake-grid{grid-template-columns:1fr}
+  .hero-numbers{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-logo">// <span>BOE</span> · back-of-envelope · interview guide</div>
+  <nav class="nav-pills">
+    <button class="nav-pill active" onclick="scrollTo('s-numbers')">Numbers</button>
+    <button class="nav-pill" onclick="scrollTo('s-calc')">Calculator</button>
+    <button class="nav-pill" onclick="scrollTo('s-steps')">Process</button>
+    <button class="nav-pill" onclick="scrollTo('s-interview')">Interview</button>
+    <button class="nav-pill" onclick="scrollTo('s-walkthroughs')">Worked examples</button>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="hero-kicker">system design interview prep</div>
+  <h1 class="hero-h1">Back-of-Envelope<br/><span class="accent">Estimation</span></h1>
+  <p class="hero-sub">The one skill that separates a senior from a mid-level engineer in every system design interview. Not because the numbers are exact — but because the process shows you think before you build.</p>
+  <div class="hero-numbers">
+    <div class="hnum"><span class="hnum-val">1 day</span><span class="hnum-label">= 86,400 s ≈ 10⁵</span></div>
+    <div class="hnum"><span class="hnum-val">1 month</span><span class="hnum-label">≈ 2.5 × 10⁶ s</span></div>
+    <div class="hnum"><span class="hnum-val">1 year</span><span class="hnum-label">≈ 3.15 × 10⁷ s</span></div>
+    <div class="hnum"><span class="hnum-val">10⁹ ns</span><span class="hnum-label">= 1 second</span></div>
+    <div class="hnum"><span class="hnum-val">1 KB</span><span class="hnum-label">= 10³ bytes</span></div>
+    <div class="hnum"><span class="hnum-val">1 GB</span><span class="hnum-label">= 10⁹ bytes</span></div>
+  </div>
+</div>
+
+<div class="layout">
+<nav class="toc">
+  <div class="toc-group">
+    <div class="toc-group-label">Reference</div>
+    <a class="toc-link" href="#s-numbers">Numbers to memorise</a>
+    <a class="toc-link" href="#s-calc">Live calculator</a>
+    <a class="toc-link" href="#s-formulas">The formulas</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">Process</div>
+    <a class="toc-link" href="#s-steps">Step-by-step method</a>
+    <a class="toc-link" href="#s-interview">In the interview</a>
+    <a class="toc-link" href="#s-mistakes">Common mistakes</a>
+  </div>
+  <div class="toc-group">
+    <div class="toc-group-label">Worked examples</div>
+    <a class="toc-link" href="#s-walkthroughs">Twitter / X</a>
+    <a class="toc-link" href="#s-wt2">YouTube</a>
+    <a class="toc-link" href="#s-wt3">Uber</a>
+    <a class="toc-link" href="#s-wt4">WhatsApp</a>
+  </div>
+</nav>
+
+<div class="content">
+
+<!-- ═══════ NUMBERS TO MEMORISE ═══════ -->
+<section class="section" id="s-numbers">
+  <div class="section-kicker">01 · reference</div>
+  <h2 class="section-title">Numbers you must have memorised</h2>
+  <p class="section-desc">You don't look these up in an interview. You have them in muscle memory and use them to anchor every estimate you produce. Approximate to the nearest power of 10 — precision kills speed.</p>
+
+  <h3 style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px">Time conversions</h3>
+  <div class="num-grid">
+    <div class="num-card"><span class="num-val">1 s</span><span class="num-label">= 1,000 ms = 10⁶ μs = 10⁹ ns</span></div>
+    <div class="num-card"><span class="num-val">1 min</span><span class="num-label">= 60 seconds</span></div>
+    <div class="num-card"><span class="num-val">1 hour</span><span class="num-label">= 3,600 seconds</span></div>
+    <div class="num-card"><span class="num-val">1 day</span><span class="num-label">= 86,400 s ≈ 10⁵ s (use 100K)</span></div>
+    <div class="num-card"><span class="num-val">1 month</span><span class="num-label">≈ 2,500,000 s ≈ 2.5 × 10⁶ s</span></div>
+    <div class="num-card"><span class="num-val">1 year</span><span class="num-label">≈ 31,500,000 s ≈ π × 10⁷ s</span></div>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:28px 0 14px">Storage sizes</h3>
+  <div class="num-grid">
+    <div class="num-card"><span class="num-val">1 KB</span><span class="num-label">= 10³ bytes = 1,024 bytes (use 1,000)</span></div>
+    <div class="num-card"><span class="num-val">1 MB</span><span class="num-label">= 10⁶ bytes — a short novel in text</span></div>
+    <div class="num-card"><span class="num-val">1 GB</span><span class="num-label">= 10⁹ bytes — ~250 songs in MP3</span></div>
+    <div class="num-card"><span class="num-val">1 TB</span><span class="num-label">= 10¹² bytes — Netflix's watch history</span></div>
+    <div class="num-card"><span class="num-val">1 PB</span><span class="num-label">= 10¹⁵ bytes — large-scale data warehouse</span></div>
+    <div class="num-card"><span class="num-val">ASCII char</span><span class="num-label">= 1 byte. UUID = 36 bytes. Int = 4 bytes.</span></div>
+  </div>
+
+  <h3 style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:28px 0 14px">Latency hierarchy — commit this to memory</h3>
+  <table class="cheat">
+    <thead><tr><th>Operation</th><th>Latency</th><th>Mental model</th><th>10× slower than</th></tr></thead>
+    <tbody>
+      <tr><td>L1 cache hit</td><td>~0.5 ns</td><td>Grabbing a pen from your desk</td><td>—</td></tr>
+      <tr><td>L2 cache hit</td><td>~7 ns</td><td>Reaching into your drawer</td><td>L1 ×14</td></tr>
+      <tr><td>L3 cache hit</td><td>~40 ns</td><td>Walking to the filing cabinet</td><td>L1 ×80</td></tr>
+      <tr><td>RAM read</td><td>~100 ns</td><td>Walking to the kitchen</td><td>L1 ×200</td></tr>
+      <tr><td>SSD random read</td><td>~100 μs</td><td>Walking to the corner shop</td><td>RAM ×1,000</td></tr>
+      <tr><td>HDD seek + read</td><td>~10 ms</td><td>Driving across town</td><td>SSD ×100</td></tr>
+      <tr><td>Same-datacenter RTT</td><td>~0.5 ms</td><td>Calling someone in your building</td><td>RAM ×5,000</td></tr>
+      <tr><td>Cross-AZ RTT (same region)</td><td>~1–2 ms</td><td>Calling someone in the next building</td><td>—</td></tr>
+      <tr><td>Cross-region RTT (US↔EU)</td><td>~80–100 ms</td><td>International phone call</td><td>same-DC ×200</td></tr>
+      <tr><td>Cross-region RTT (US↔Asia)</td><td>~150–200 ms</td><td>Long international call</td><td>same-DC ×400</td></tr>
+      <tr><td>Redis read (network)</td><td>~1 ms</td><td>Walking down the corridor</td><td>—</td></tr>
+      <tr><td>PostgreSQL indexed read</td><td>~5–10 ms</td><td>Walking to the next building</td><td>Redis ×10</td></tr>
+      <tr><td>Mutex lock/unlock</td><td>~25 ns</td><td>Passing through a door</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:28px 0 14px">Throughput / bandwidth reference</h3>
+  <table class="cheat">
+    <thead><tr><th>System</th><th>Throughput</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Single server (simple API)</td><td>~1K–10K RPS</td><td>Depends on IO vs CPU bound</td></tr>
+      <tr><td>PostgreSQL writes (OLTP)</td><td>~1K–5K TPS</td><td>Per primary, more with sharding</td></tr>
+      <tr><td>PostgreSQL reads (with cache)</td><td>~10K–100K QPS</td><td>With read replicas + Redis in front</td></tr>
+      <tr><td>Redis operations</td><td>~100K–1M ops/s</td><td>In-memory, single-threaded</td></tr>
+      <tr><td>Kafka single partition</td><td>~10K–1M msg/s</td><td>Scales linearly with partitions</td></tr>
+      <tr><td>S3 / blob storage</td><td>~5,500 GET/s per prefix</td><td>Prefix sharding avoids hotspots</td></tr>
+      <tr><td>EC2 instance network</td><td>1–100 Gbps</td><td>Depends on instance type</td></tr>
+      <tr><td>Data center internal</td><td>10–100 Gbps</td><td>Backbone capacity</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:28px 0 14px">Availability — the nines table</h3>
+  <table class="cheat">
+    <thead><tr><th>SLA</th><th>Downtime/year</th><th>Downtime/month</th><th>Who needs it</th></tr></thead>
+    <tbody>
+      <tr><td>99%</td><td>87.6 hrs</td><td>7.3 hrs</td><td>Internal tools, non-critical</td></tr>
+      <tr><td>99.9%</td><td>8.76 hrs</td><td>43.8 min</td><td>Most web apps</td></tr>
+      <tr><td>99.95%</td><td>4.38 hrs</td><td>21.9 min</td><td>E-commerce, SaaS</td></tr>
+      <tr><td>99.99%</td><td>52.6 min</td><td>4.4 min</td><td>Financial, healthcare APIs</td></tr>
+      <tr><td>99.999%</td><td>5.26 min</td><td>26 sec</td><td>Critical infra, payment rails</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════ LIVE CALCULATOR ═══════ -->
+<section class="section" id="s-calc">
+  <div class="section-kicker">02 · tool</div>
+  <h2 class="section-title">Live estimation calculator</h2>
+  <p class="section-desc">Pick a system type, enter your numbers, and see all derived estimates computed in real time — exactly what you'd work through on a whiteboard, without the arithmetic errors.</p>
+
+  <div class="calc-shell">
+    <div class="calc-topbar">
+      <div class="calc-dot" style="background:#f85149"></div>
+      <div class="calc-dot" style="background:#e3b341"></div>
+      <div class="calc-dot" style="background:#3fb950"></div>
+      <span class="calc-title">BOE Calculator v1.0 — estimation.sh</span>
+    </div>
+    <div class="calc-body">
+      <p style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:10px">SELECT SYSTEM TYPE</p>
+      <div class="calc-system-select">
+        <button class="sys-btn active" onclick="setMode('social')">Social / Feed</button>
+        <button class="sys-btn" onclick="setMode('ecommerce')">E-commerce</button>
+        <button class="sys-btn" onclick="setMode('messaging')">Messaging</button>
+        <button class="sys-btn" onclick="setMode('video')">Video streaming</button>
+        <button class="sys-btn" onclick="setMode('maps')">Maps / Location</button>
+        <button class="sys-btn" onclick="setMode('custom')">Custom</button>
+      </div>
+
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label class="calc-label">DAU <span>daily active users</span></label>
+          <input class="calc-input" id="inp-dau" type="number" value="100000000" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Read actions/user/day <span>avg page views, searches, etc</span></label>
+          <input class="calc-input" id="inp-reads" type="number" value="20" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Write actions/user/day <span>posts, orders, messages</span></label>
+          <input class="calc-input" id="inp-writes" type="number" value="2" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Avg object size <span>bytes per record stored</span></label>
+          <input class="calc-input" id="inp-objsize" type="number" value="500" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Avg response size <span>bytes sent to client per request</span></label>
+          <input class="calc-input" id="inp-respsize" type="number" value="5000" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Data retention <span>years to keep data</span></label>
+          <input class="calc-input" id="inp-retention" type="number" value="5" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Peak multiplier <span>peak traffic vs daily average</span></label>
+          <input class="calc-input" id="inp-peak" type="number" value="3" oninput="recalc()"/>
+        </div>
+        <div class="calc-field">
+          <label class="calc-label">Replication factor <span>DB copies for durability</span></label>
+          <input class="calc-input" id="inp-repl" type="number" value="3" oninput="recalc()"/>
+        </div>
+      </div>
+
+      <div class="calc-output">
+        <div class="calc-output-title">// computed estimates</div>
+        <div class="calc-result-grid" id="calc-results"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout callout-green">
+    <strong>How to use this in an interview:</strong> say every number out loud as you write it. "100 million DAU, they each do 20 reads per day — that's 2 billion reads per day — divided by 86,400 seconds — rounds to roughly 23,000 reads per second. Let's call it 25K RPS for reads." The interviewer is grading your reasoning, not your arithmetic.
+  </div>
+</section>
+
+<!-- ═══════ THE FORMULAS ═══════ -->
+<section class="section" id="s-formulas">
+  <div class="section-kicker">03 · formulas</div>
+  <h2 class="section-title">The core formulas — all of them</h2>
+  <p class="section-desc">Every back-of-envelope estimation in a system design interview reduces to one or more of these formulas. Learn them as patterns, not as algebra.</p>
+
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-icon">⚡</div>
+      <div class="rule-title">Read RPS</div>
+      <div class="rule-body">Daily active users × reads per user per day, divided by seconds in a day.</div>
+      <code class="rule-math">RPS = DAU × reads/day ÷ 86,400</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">✍️</div>
+      <div class="rule-title">Write TPS</div>
+      <div class="rule-body">Same formula as reads, but for write events (posts, purchases, messages).</div>
+      <code class="rule-math">TPS = DAU × writes/day ÷ 86,400</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">📦</div>
+      <div class="rule-title">Daily new data</div>
+      <div class="rule-body">Writes per day multiplied by bytes per object. This is your daily storage growth.</div>
+      <code class="rule-math">Daily = TPS × 86,400 × bytes/object</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🗄️</div>
+      <div class="rule-title">Total storage (N years)</div>
+      <div class="rule-body">Daily growth times days times replication factor. Always include replication — disk cost is 3× your data.</div>
+      <code class="rule-math">Total = Daily × 365 × years × repl_factor</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">📡</div>
+      <div class="rule-title">Bandwidth (outbound)</div>
+      <div class="rule-body">Reads per second times bytes per response. Convert to Mbps by multiplying by 8 and dividing by 10⁶.</div>
+      <code class="rule-math">Mbps = RPS × response_bytes × 8 ÷ 10⁶</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🔥</div>
+      <div class="rule-title">Peak traffic</div>
+      <div class="rule-body">Always provision for 2–5× the average. Never size for average — you'll collapse under any spike.</div>
+      <code class="rule-math">Peak_RPS = Avg_RPS × peak_multiplier</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🧠</div>
+      <div class="rule-title">Cache size (80/20 rule)</div>
+      <div class="rule-body">20% of your content gets 80% of traffic. Size your cache to hold that 20% hot data.</div>
+      <code class="rule-math">Cache = Total_objects × 0.20 × bytes/object</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🖥️</div>
+      <div class="rule-title">Server count</div>
+      <div class="rule-body">Peak RPS divided by what a single server can handle. Add ~30% headroom so you never run at 100%.</div>
+      <code class="rule-math">Servers = Peak_RPS ÷ RPS_per_server × 1.3</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🔌</div>
+      <div class="rule-title">Concurrent connections (Little's Law)</div>
+      <div class="rule-body">Connections = Arrival rate × average time a request is "in flight". Latency kills concurrency.</div>
+      <code class="rule-math">Conc = RPS × avg_response_time_seconds</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">📊</div>
+      <div class="rule-title">QPS to DB (read)</div>
+      <div class="rule-body">Reads per second × (1 − cache hit rate). This is the DB load after the cache absorbs its share.</div>
+      <code class="rule-math">DB_QPS = RPS × (1 - cache_hit_ratio)</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🌐</div>
+      <div class="rule-title">CDN origin load</div>
+      <div class="rule-body">With a CDN, the origin only serves cache misses. A 95% hit rate means the origin sees 5% of raw traffic.</div>
+      <code class="rule-math">Origin_RPS = RPS × (1 - cdn_hit_rate)</code>
+    </div>
+    <div class="rule-card">
+      <div class="rule-icon">🔐</div>
+      <div class="rule-title">Fan-out writes (social)</div>
+      <div class="rule-body">For social feeds: 1 post by a user with N followers = N writes to timelines. Viral posts cause write explosions.</div>
+      <code class="rule-math">Timeline_writes = Posts/s × avg_followers</code>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ STEP BY STEP ═══════ -->
+<section class="section" id="s-steps">
+  <div class="section-kicker">04 · process</div>
+  <h2 class="section-title">Step-by-step method — in order, every time</h2>
+  <p class="section-desc">The estimation phase of a system design interview has a repeatable structure. Follow it in the same order every time so it becomes automatic. The sequence matters — each step's output feeds the next.</p>
+
+  <div class="step-flow">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <div class="step-title">State your assumptions out loud, write them on the board</div>
+        <div class="step-body">Before touching a number, declare: "I'll assume 100 million DAU. I'll assume a 9:1 read-write ratio. I'll assume average post size is 500 bytes. Tell me if any of these are off." This shows senior-level thinking — you know numbers come from assumptions, not from the sky. The interviewer may correct you; that's fine, that's the point.</div>
+        <code class="step-example">Assumptions:
+  DAU         = 100M
+  Read:Write  = 10:1
+  Avg post    = 500 bytes (text) + 2 MB (if image, separate)
+  Retention   = 5 years
+  Replication = 3x (standard)</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <div class="step-title">Calculate traffic — reads, writes, and peak</div>
+        <div class="step-body">Convert DAU × actions/day into requests per second. Do reads, then writes separately. Then apply your peak multiplier — design for peak, not average. Round aggressively — "roughly 23K, let's call it 25K."</div>
+        <code class="step-example">Read RPS  = 100M × 20 reads/day ÷ 86,400 = 23,148 ≈ 25K RPS
+Write TPS = 100M × 2 writes/day ÷ 86,400  = 2,315  ≈ 2.5K TPS
+Peak reads (3×)  = 75K RPS
+Peak writes (3×) = 7.5K TPS</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <div class="step-title">Calculate storage — daily growth, then 5-year total</div>
+        <div class="step-body">Daily new data = write TPS × seconds/day × bytes/record. Then project for your retention period. Always multiply by replication factor at the end — the real disk cost is 3× your logical data size.</div>
+        <code class="step-example">Daily new data  = 2,500 writes/s × 86,400 s × 500 B = 108 GB/day
+5-year logical  = 108 GB × 365 × 5          = 197 TB
+With 3× repl.  = 197 TB × 3                 ≈ 600 TB total disk
+
+Note: image uploads handled separately → S3, not DB</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <div class="step-title">Calculate bandwidth — outbound, then inbound</div>
+        <div class="step-body">Outbound bandwidth = peak read RPS × average response size × 8 (to bits). Inbound = write TPS × average request size × 8. Compare these to your chosen infrastructure's network limits.</div>
+        <code class="step-example">Outbound = 75,000 RPS × 5,000 bytes × 8 ÷ 10⁶ = 3,000 Mbps = 3 Gbps
+Inbound  =  7,500 TPS ×   500 bytes × 8 ÷ 10⁶ =    30 Mbps
+→ Outbound is the bottleneck — need multi-Gbps egress, CDN is essential</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <div class="step-title">Calculate memory / cache size</div>
+        <div class="step-body">Apply the 80/20 rule: 20% of objects serve 80% of reads. Size your Redis cluster to hold that 20% hot data. Also account for session data, distributed locks, and any other in-memory state.</div>
+        <code class="step-example">Total objects    = 2,500 writes/s × 86,400 × 365 × 5 = 394 billion records
+Hot 20%          = 79 billion records × 500 B = 39 TB (too large for RAM)
+→ Strategy: cache recent 7-day data (hot window)
+7-day objects    = 2,500 × 86,400 × 7 = 1.5 billion × 500 B = 756 GB
+Redis cluster    ≈ 1 TB RAM (with headroom)</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">06</div>
+      <div class="step-content">
+        <div class="step-title">Calculate server count and DB shard count</div>
+        <div class="step-body">Divide peak RPS by a single server's capacity (typically 1K–10K RPS depending on the operation). Add 30% headroom. For the DB, if writes exceed ~5K TPS for a single primary, you need sharding — divide total TPS by what a single shard can handle.</div>
+        <code class="step-example">App servers = 75,000 peak RPS ÷ 5,000 RPS/server × 1.3 = 20 servers (min)
+DB primaries: 7,500 write TPS ÷ 3,000 TPS/shard = 3 shards min
+DB replicas : 3 shards × 2 replicas each = 6 read replicas
+Total DB nodes: 9</code>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">07</div>
+      <div class="step-content">
+        <div class="step-title">Derive your architecture decisions from the numbers</div>
+        <div class="step-body">This is the step most candidates skip. The numbers aren't the end — they tell you which components you need. High read RPS → caching layer is mandatory. High write TPS → event-driven async. Large data → sharding. High bandwidth → CDN. Let the estimates justify your design choices out loud.</div>
+        <code class="step-example">→ 25K read RPS: Redis cache mandatory (DB alone can't handle it)
+→ 2.5K write TPS: within single PostgreSQL primary — no sharding yet
+→ 3 Gbps outbound: CloudFront CDN mandatory, images to S3
+→ 600 TB total: object storage (S3) + RDBMS for hot data + archive cold
+→ 5-year: implement data tiering (hot → SSD, cold → S3 Glacier)</code>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ IN THE INTERVIEW ═══════ -->
+<section class="section" id="s-interview">
+  <div class="section-kicker">05 · interview technique</div>
+  <h2 class="section-title">How to run this in a live interview</h2>
+  <p class="section-desc">The content of your estimation matters less than whether you demonstrate a methodical, collaborative process. Here's the exact sequence interviewers at top companies expect to see.</p>
+
+  <div class="interview-timeline">
+    <div class="it-item active" data-min="0–2">
+      <div class="it-time">min 0–2</div>
+      <div class="it-title">Ask for the scale, don't assume it</div>
+      <div class="it-body">"Before I estimate, can I ask a few clarifying questions? How many users are we designing for — are we thinking startup scale, or something like Twitter at 300 million DAU?" The interviewer will often give you a number or say "you tell me" — both are fine. If they say "you decide," pick a round number and say it out loud.</div>
+    </div>
+    <div class="it-item" data-min="2–5">
+      <div class="it-time">min 2–5</div>
+      <div class="it-title">Write your assumptions first, before any math</div>
+      <div class="it-body">Write the raw inputs on the board: DAU, read:write ratio, object size, retention. Say each one as you write it. This gives the interviewer a chance to correct you before you build a skyscraper on a wrong foundation, and shows you understand that estimates start with assumptions.</div>
+    </div>
+    <div class="it-item" data-min="5–10">
+      <div class="it-time">min 5–10</div>
+      <div class="it-title">Work through traffic → storage → bandwidth in that order</div>
+      <div class="it-body">Don't jump around. The order matters: traffic tells you your compute needs, storage tells you your database needs, bandwidth tells you your network needs. Talk as you calculate — "2 billion reads divided by 86,400 seconds, that's roughly 23K reads per second, let's round to 25K." The interviewer is watching your reasoning, not grading your arithmetic.</div>
+    </div>
+    <div class="it-item" data-min="10–12">
+      <div class="it-time">min 10–12</div>
+      <div class="it-title">Derive conclusions — don't just dump numbers</div>
+      <div class="it-body">"So at 25K read RPS, a single database can't handle this — we'll need a caching layer. At 600 TB over 5 years, we'll need object storage, not just a relational DB. At 3 Gbps outbound, we need a CDN." This is what separates senior engineers: you use the numbers to justify the architecture, not just to show you can do arithmetic.</div>
+    </div>
+    <div class="it-item" data-min="12+">
+      <div class="it-time">min 12+</div>
+      <div class="it-title">Keep the estimates visible — refer back to them</div>
+      <div class="it-body">Don't erase your estimates when you start drawing the architecture. When you place the cache, say "because of our 25K RPS requirement." When you add sharding, say "because at 2.5K write TPS we're approaching the limit of a single primary." The numbers become the design's justification throughout the interview.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-orange">
+    <strong>The single most common mistake:</strong> candidates estimate and then ignore the numbers when drawing the architecture. The estimates exist to drive decisions — reference them every time you add a box. "I'm adding Redis here because our 25K read RPS would saturate a database primary" is a senior answer. Just drawing a Redis box is a junior answer.
+  </div>
+</section>
+
+<!-- ═══════ MISTAKES ═══════ -->
+<section class="section" id="s-mistakes">
+  <div class="section-kicker">06 · what to avoid</div>
+  <h2 class="section-title">Common mistakes — bad vs good</h2>
+  <p class="section-desc">These are the actual patterns that cause otherwise solid candidates to lose seniority signals during estimation.</p>
+
+  <div class="mistake-grid">
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">"Let's say 1 million users."
+(no justification, no derivation)</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">"I'll assume 10M DAU — that's in the range of a mid-scale product. If this is meant to be Twitter-scale I'll adjust."</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">"We'll need about 1 TB of storage."
+(no calculation shown)</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">"10M users × 10 writes/day = 100M writes/day. × 500B = 50GB/day. × 365 × 5 = ~90TB. × 3 replication = ~270TB total."</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Spending 20 minutes on estimation, producing a spreadsheet of exact numbers</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">10 minutes max. Round to nearest power of 10. "~25K, let's call it 30K" is correct interview math.</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Erasing the estimates and drawing the architecture from memory without connecting the two</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">Keep estimates visible. Reference them every time you add a component: "Cache because of 25K RPS."</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Forgetting to multiply by replication factor for storage — getting the number 3× too small</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">Always: logical_data × replication_factor (3). Real disk cost is always 3× what you store logically.</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Sizing for average traffic, not peak — your system collapses on the first big event</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">Always apply a 2–5× peak multiplier after calculating average. Provision for peak. Autoscale down to average.</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Not accounting for the 80/20 rule on cache — sizing cache for all data instead of just hot data</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">"20% of objects serve 80% of reads — I'll size the cache to hold that 20% hot slice, not everything."</div>
+    </div>
+    <div class="mistake-card">
+      <div class="mistake-label" style="color:var(--red)">❌ Bad</div>
+      <div class="mistake-bad">Forgetting media (images, video) — under-estimating storage by 100× for image-heavy products</div>
+      <div class="mistake-label" style="color:var(--green);margin-top:10px">✓ Good</div>
+      <div class="mistake-good">"Text: 500B/post. But if users can upload photos (~2MB avg), that's 4,000× more storage — handle separately with S3."</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ WORKED EXAMPLE: TWITTER ═══════ -->
+<section class="section" id="s-walkthroughs">
+  <div class="section-kicker">07 · worked examples</div>
+  <h2 class="section-title">Twitter / X — full estimation walkthrough</h2>
+  <p class="section-desc">Read this as if you were speaking it out loud in an interview. Every line is a thought spoken, not just a calculation.</p>
+
+  <div class="walkthrough">
+    <div class="wt-header">
+      <span>// system: <span class="wt-system">Twitter / X</span> — read-heavy social media with fan-out writes</span>
+      <span style="color:var(--dim)">target: ~10 min</span>
+    </div>
+    <div class="wt-body">
+      <div class="wt-section">STEP 1 — ASSUMPTIONS</div>
+      <div class="wt-line"><span class="wt-key">DAU</span><span class="wt-op">=</span><span class="wt-val">300M</span><span class="wt-note">stated in problem</span></div>
+      <div class="wt-line"><span class="wt-key">Tweets per user per day</span><span class="wt-op">≈</span><span class="wt-val">0.1</span><span class="wt-note">most users read, few post</span></div>
+      <div class="wt-line"><span class="wt-key">Timeline reads per user per day</span><span class="wt-op">≈</span><span class="wt-val">50</span><span class="wt-note">scrolls through feed</span></div>
+      <div class="wt-line"><span class="wt-key">Avg tweet size (text)</span><span class="wt-op">=</span><span class="wt-val">280 bytes ≈ 300 B</span><span class="wt-note">char limit</span></div>
+      <div class="wt-line"><span class="wt-key">Avg followers per user</span><span class="wt-op">=</span><span class="wt-val">200</span><span class="wt-note">geometric mean, not arithmetic</span></div>
+      <div class="wt-line"><span class="wt-key">Retention</span><span class="wt-op">=</span><span class="wt-val">5 years</span><span class="wt-note">assumption</span></div>
+
+      <div class="wt-section">STEP 2 — TRAFFIC</div>
+      <div class="wt-line"><span class="wt-key">Total tweets/day</span><span class="wt-op">= 300M × 0.1</span><span class="wt-val">= 30M tweets/day</span></div>
+      <div class="wt-line"><span class="wt-key">Write TPS (tweets)</span><span class="wt-op">= 30M ÷ 86,400</span><span class="wt-val">≈ 350 TPS</span><span class="wt-note">very low!</span></div>
+      <div class="wt-line"><span class="wt-key">Timeline reads/day</span><span class="wt-op">= 300M × 50</span><span class="wt-val">= 15B reads/day</span></div>
+      <div class="wt-line"><span class="wt-key">Read RPS</span><span class="wt-op">= 15B ÷ 86,400</span><span class="wt-val">≈ 175K RPS</span><span class="wt-note">very high!</span></div>
+      <div class="wt-line"><span class="wt-key">Read:Write ratio</span><span class="wt-op">= 175K ÷ 350</span><span class="wt-val">≈ 500:1</span><span class="wt-note">extreme read skew → cache everything</span></div>
+      <div class="wt-line"><span class="wt-key">Fan-out writes/s</span><span class="wt-op">= 350 TPS × 200 followers</span><span class="wt-val">= 70,000 fan-out writes/s</span><span class="wt-note">celebrity posts explode this</span></div>
+      <div class="wt-line"><span class="wt-key">Peak (3×)</span><span class="wt-op"></span><span class="wt-val">525K read RPS, 210K fan-out TPS</span></div>
+
+      <div class="wt-section">STEP 3 — STORAGE</div>
+      <div class="wt-line"><span class="wt-key">Daily tweet data</span><span class="wt-op">= 30M × 300 B</span><span class="wt-val">= 9 GB/day text</span></div>
+      <div class="wt-line"><span class="wt-key">5-year text data</span><span class="wt-op">= 9 GB × 365 × 5</span><span class="wt-val">≈ 16 TB</span><span class="wt-note">tiny — tweets are small</span></div>
+      <div class="wt-line"><span class="wt-key">With 3× replication</span><span class="wt-op">= 16 TB × 3</span><span class="wt-val">≈ 50 TB</span></div>
+      <div class="wt-line"><span class="wt-key">Media (assume 10% tweets have image, 2MB)</span><span class="wt-op">= 3M images/day × 2MB</span><span class="wt-val">= 6 TB/day ← dominant cost</span></div>
+      <div class="wt-line"><span class="wt-key">5yr media total</span><span class="wt-op">= 6 TB × 365 × 5</span><span class="wt-val">≈ 10 PB → S3, not DB</span></div>
+
+      <div class="wt-section">STEP 4 — BANDWIDTH</div>
+      <div class="wt-line"><span class="wt-key">Read bandwidth</span><span class="wt-op">= 525K RPS × 5KB/response × 8</span><span class="wt-val">= 21 Gbps outbound</span><span class="wt-note">CDN mandatory</span></div>
+      <div class="wt-line"><span class="wt-key">Write bandwidth</span><span class="wt-op">= 350 TPS × 300 B × 8</span><span class="wt-val">≈ 1 Mbps inbound</span></div>
+
+      <div class="wt-section">STEP 5 — CONCLUSIONS → ARCHITECTURE DECISIONS</div>
+      <div class="wt-line"><span class="wt-key">175K read RPS</span><span class="wt-op">→</span><span class="wt-val">Redis timeline cache — DB alone can't serve this</span></div>
+      <div class="wt-line"><span class="wt-key">500:1 read:write</span><span class="wt-op">→</span><span class="wt-val">Push fan-out (pre-write timelines) for most users</span></div>
+      <div class="wt-line"><span class="wt-key">70K fan-out/s</span><span class="wt-op">→</span><span class="wt-val">Kafka for async fan-out — synchronous would time out</span></div>
+      <div class="wt-line"><span class="wt-key">Celebrity posts</span><span class="wt-op">→</span><span class="wt-val">Pull model for users with &gt;1M followers (hybrid approach)</span></div>
+      <div class="wt-line"><span class="wt-key">10 PB media</span><span class="wt-op">→</span><span class="wt-val">S3 + CloudFront CDN, not database storage</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ WALKTHROUGH: YOUTUBE ═══════ -->
+<section class="section" id="s-wt2">
+  <div class="section-kicker">07b · worked example</div>
+  <h2 class="section-title">YouTube — video-heavy read-dominated system</h2>
+
+  <div class="walkthrough">
+    <div class="wt-header">
+      <span>// system: <span class="wt-system">YouTube</span> — bandwidth and storage dominated by video</span>
+      <span style="color:var(--dim)">target: ~10 min</span>
+    </div>
+    <div class="wt-body">
+      <div class="wt-section">ASSUMPTIONS</div>
+      <div class="wt-line"><span class="wt-key">DAU</span><span class="wt-op">=</span><span class="wt-val">2 billion (MAU) → ~500M DAU</span></div>
+      <div class="wt-line"><span class="wt-key">Video watched per user per day</span><span class="wt-op">≈</span><span class="wt-val">30 min = 5 videos avg</span></div>
+      <div class="wt-line"><span class="wt-key">Videos uploaded per day</span><span class="wt-op">≈</span><span class="wt-val">500K (0.1% of users upload)</span></div>
+      <div class="wt-line"><span class="wt-key">Avg video size (raw)</span><span class="wt-op">=</span><span class="wt-val">1 GB (10 min at 4K before encoding)</span></div>
+      <div class="wt-line"><span class="wt-key">Encoded sizes</span><span class="wt-op">=</span><span class="wt-val">4 resolutions × 200 MB avg = 800 MB per video</span></div>
+
+      <div class="wt-section">TRAFFIC</div>
+      <div class="wt-line"><span class="wt-key">Video views/day</span><span class="wt-op">= 500M × 5</span><span class="wt-val">= 2.5 billion views/day</span></div>
+      <div class="wt-line"><span class="wt-key">Streaming RPS</span><span class="wt-op">= 2.5B ÷ 86,400</span><span class="wt-val">≈ 29K concurrent streams</span></div>
+      <div class="wt-line"><span class="wt-key">Upload TPS</span><span class="wt-op">= 500K ÷ 86,400</span><span class="wt-val">≈ 6 uploads/s</span><span class="wt-note">low count, huge size</span></div>
+
+      <div class="wt-section">STORAGE & BANDWIDTH</div>
+      <div class="wt-line"><span class="wt-key">New storage/day</span><span class="wt-op">= 500K × 800 MB</span><span class="wt-val">= 400 TB/day</span><span class="wt-note">massive!</span></div>
+      <div class="wt-line"><span class="wt-key">5-year storage</span><span class="wt-op">= 400 TB × 365 × 5</span><span class="wt-val">≈ 730 PB ≈ 1 exabyte (with repl)</span></div>
+      <div class="wt-line"><span class="wt-key">Streaming bandwidth</span><span class="wt-op">= 29K streams × 5 Mbps avg</span><span class="wt-val">= 145 Gbps outbound</span></div>
+
+      <div class="wt-section">CONCLUSIONS</div>
+      <div class="wt-line"><span class="wt-key">400 TB/day upload</span><span class="wt-op">→</span><span class="wt-val">Distributed object storage (GCS/S3) with async encoding pipeline</span></div>
+      <div class="wt-line"><span class="wt-key">145 Gbps streaming</span><span class="wt-op">→</span><span class="wt-val">Global CDN with edge caching is non-negotiable</span></div>
+      <div class="wt-line"><span class="wt-key">1 exabyte</span><span class="wt-op">→</span><span class="wt-val">Tiered storage: hot (SSD), warm (HDD), cold (tape/Glacier)</span></div>
+      <div class="wt-line"><span class="wt-key">Video encoding</span><span class="wt-op">→</span><span class="wt-val">Separate encoding farm (GPU workers) — not same service as serving</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ WALKTHROUGH: UBER ═══════ -->
+<section class="section" id="s-wt3">
+  <div class="section-kicker">07c · worked example</div>
+  <h2 class="section-title">Uber — real-time geolocation and matching</h2>
+
+  <div class="walkthrough">
+    <div class="wt-header">
+      <span>// system: <span class="wt-system">Uber</span> — location updates dominate all other traffic</span>
+      <span style="color:var(--dim)">target: ~10 min</span>
+    </div>
+    <div class="wt-body">
+      <div class="wt-section">ASSUMPTIONS</div>
+      <div class="wt-line"><span class="wt-key">Active drivers (at any moment)</span><span class="wt-op">≈</span><span class="wt-val">1 million globally at peak</span></div>
+      <div class="wt-line"><span class="wt-key">Location update frequency</span><span class="wt-op">=</span><span class="wt-val">every 4 seconds (GPS ping)</span></div>
+      <div class="wt-line"><span class="wt-key">Active riders requesting</span><span class="wt-op">≈</span><span class="wt-val">5M users browsing for a ride at peak</span></div>
+      <div class="wt-line"><span class="wt-key">Avg trips/driver/day</span><span class="wt-op">=</span><span class="wt-val">15 trips</span></div>
+      <div class="wt-line"><span class="wt-key">Location update payload</span><span class="wt-op">=</span><span class="wt-val">100 bytes (lat, lng, driver_id, ts)</span></div>
+
+      <div class="wt-section">TRAFFIC — LOCATION IS THE BOTTLENECK</div>
+      <div class="wt-line"><span class="wt-key">Location writes/s</span><span class="wt-op">= 1M drivers ÷ 4s</span><span class="wt-val">= 250,000 writes/s</span><span class="wt-note">this is huge</span></div>
+      <div class="wt-line"><span class="wt-key">Rider nearby-driver queries</span><span class="wt-op">= 5M × 1 query/10s</span><span class="wt-val">= 500K geo queries/s</span></div>
+      <div class="wt-line"><span class="wt-key">Trip creation TPS</span><span class="wt-op">= 1M drivers × 15 trips ÷ 86,400</span><span class="wt-val">≈ 174 TPS</span><span class="wt-note">tiny vs location</span></div>
+
+      <div class="wt-section">STORAGE</div>
+      <div class="wt-line"><span class="wt-key">Location log/day</span><span class="wt-op">= 250K/s × 86,400 × 100B</span><span class="wt-val">= 2.16 TB/day</span><span class="wt-note">but only hot window matters</span></div>
+      <div class="wt-line"><span class="wt-key">Hot state (drivers now)</span><span class="wt-op">= 1M drivers × 100B</span><span class="wt-val">= 100 MB</span><span class="wt-note">tiny! fits in RAM easily</span></div>
+      <div class="wt-line"><span class="wt-key">Trip history (5yr)</span><span class="wt-op">= 174 TPS × 86,400 × 365 × 5 × 500B</span><span class="wt-val">≈ 12 TB</span></div>
+
+      <div class="wt-section">CONCLUSIONS</div>
+      <div class="wt-line"><span class="wt-key">250K location writes/s</span><span class="wt-op">→</span><span class="wt-val">Cassandra or Redis Geo — PostgreSQL at 5K TPS can't handle this</span></div>
+      <div class="wt-line"><span class="wt-key">100MB hot state</span><span class="wt-op">→</span><span class="wt-val">All active driver positions fit in a single Redis instance</span></div>
+      <div class="wt-line"><span class="wt-key">500K geo queries/s</span><span class="wt-op">→</span><span class="wt-val">Geohash-partitioned in-memory lookup, not DB query</span></div>
+      <div class="wt-line"><span class="wt-key">Websockets</span><span class="wt-op">→</span><span class="wt-val">Persistent connections for driver apps (not polling) — 1M open sockets</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ WALKTHROUGH: WHATSAPP ═══════ -->
+<section class="section" id="s-wt4">
+  <div class="section-kicker">07d · worked example</div>
+  <h2 class="section-title">WhatsApp — high write TPS, delivery guarantees</h2>
+
+  <div class="walkthrough">
+    <div class="wt-header">
+      <span>// system: <span class="wt-system">WhatsApp</span> — 100B messages/day, delivery critical</span>
+      <span style="color:var(--dim)">target: ~10 min</span>
+    </div>
+    <div class="wt-body">
+      <div class="wt-section">ASSUMPTIONS</div>
+      <div class="wt-line"><span class="wt-key">DAU</span><span class="wt-op">=</span><span class="wt-val">2 billion</span></div>
+      <div class="wt-line"><span class="wt-key">Messages/user/day</span><span class="wt-op">=</span><span class="wt-val">50 (send + receive combined)</span></div>
+      <div class="wt-line"><span class="wt-key">Avg message size</span><span class="wt-op">=</span><span class="wt-val">100 bytes text (media handled separately)</span></div>
+      <div class="wt-line"><span class="wt-key">Group chat: avg group size</span><span class="wt-op">=</span><span class="wt-val">30 members, 20% of messages</span></div>
+
+      <div class="wt-section">TRAFFIC</div>
+      <div class="wt-line"><span class="wt-key">Messages/day</span><span class="wt-op">= 2B × 50</span><span class="wt-val">= 100B messages/day</span></div>
+      <div class="wt-line"><span class="wt-key">Message TPS (write)</span><span class="wt-op">= 100B ÷ 86,400</span><span class="wt-val">≈ 1.16M msg/s</span><span class="wt-note">massive write volume</span></div>
+      <div class="wt-line"><span class="wt-key">Group fan-out</span><span class="wt-op">= 1.16M × 20% × 30 members</span><span class="wt-val">= 6.96M deliveries/s</span></div>
+      <div class="wt-line"><span class="wt-key">Peak (2×)</span><span class="wt-op"></span><span class="wt-val">2.3M msg/s write, 14M deliveries/s</span></div>
+
+      <div class="wt-section">STORAGE</div>
+      <div class="wt-line"><span class="wt-key">Message storage/day</span><span class="wt-op">= 100B × 100B</span><span class="wt-val">= 10 TB/day</span></div>
+      <div class="wt-line"><span class="wt-key">Note: WhatsApp stores on device</span><span class="wt-op">→</span><span class="wt-val">server only keeps for delivery, then deletes</span><span class="wt-note">key design choice</span></div>
+      <div class="wt-line"><span class="wt-key">Undelivered message buffer</span><span class="wt-op">= assume 7-day max hold</span><span class="wt-val">= 70 TB buffer</span></div>
+
+      <div class="wt-section">CONCLUSIONS</div>
+      <div class="wt-line"><span class="wt-key">1.16M msg/s</span><span class="wt-op">→</span><span class="wt-val">Kafka ingestion + Cassandra for message store (high write throughput)</span></div>
+      <div class="wt-line"><span class="wt-key">Delete after delivery</span><span class="wt-op">→</span><span class="wt-val">Storage stays bounded despite huge volume</span></div>
+      <div class="wt-line"><span class="wt-key">14M deliveries/s</span><span class="wt-op">→</span><span class="wt-val">Persistent WebSocket connections per device, connection server fleet</span></div>
+      <div class="wt-line"><span class="wt-key">Delivery guarantee</span><span class="wt-op">→</span><span class="wt-val">At-least-once with dedup (idempotency keys), acked by device</span></div>
+    </div>
+  </div>
+
+  <div class="callout callout-blue" style="margin-top:24px">
+    <strong>Cross-example pattern:</strong> in every worked example, the surprising insight comes from the numbers, not from prior knowledge. Uber's insight is that 1M driver locations fit in 100MB of RAM — you can serve all geo queries from a single Redis node. Twitter's insight is the 500:1 read:write ratio demanding pre-computed timelines. WhatsApp's insight is that storing on-device instead of server-side collapses a 70TB storage problem. The math tells you the architecture.
+  </div>
+</section>
+
+</div>
+</div>
+
+<footer class="footer">
+  <span>// back-of-envelope · 4 worked examples · 12 formulas · live calculator</span>
+  <span>system design interview prep · 2026</span>
+</footer>
+
+<script>
+/* ── scroll spy ── */
+const sections = document.querySelectorAll('.section[id]');
+const tocLinks = document.querySelectorAll('.toc-link');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const id = e.target.id;
+      tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#'+id));
+    }
+  });
+}, {rootMargin:'-20% 0px -70% 0px'});
+sections.forEach(s => observer.observe(s));
+
+/* ── nav pill smooth scroll ── */
+function scrollTo(id){
+  const el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
+
+/* ── calculator ── */
+const MODES = {
+  social:    {dau:300e6, reads:50, writes:1, objsize:300, respsize:3000, retention:5, peak:3, repl:3},
+  ecommerce: {dau:100e6, reads:20, writes:2, objsize:500, respsize:5000, retention:5, peak:4, repl:3},
+  messaging: {dau:2e9,   reads:50, writes:50,objsize:100, respsize:500,  retention:1, peak:2, repl:3},
+  video:     {dau:500e6, reads:5,  writes:0.001, objsize:800e6, respsize:5e6, retention:5, peak:2, repl:2},
+  maps:      {dau:200e6, reads:30, writes:10, objsize:100, respsize:2000, retention:3, peak:5, repl:3},
+  custom:    {dau:10e6,  reads:20, writes:2, objsize:500, respsize:5000, retention:5, peak:3, repl:3}
+};
+
+function setMode(m){
+  document.querySelectorAll('.sys-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const cfg = MODES[m];
+  document.getElementById('inp-dau').value       = cfg.dau;
+  document.getElementById('inp-reads').value     = cfg.reads;
+  document.getElementById('inp-writes').value    = cfg.writes;
+  document.getElementById('inp-objsize').value   = cfg.objsize;
+  document.getElementById('inp-respsize').value  = cfg.respsize;
+  document.getElementById('inp-retention').value = cfg.retention;
+  document.getElementById('inp-peak').value      = cfg.peak;
+  document.getElementById('inp-repl').value      = cfg.repl;
+  recalc();
+}
+
+function fmt(n){
+  if(n >= 1e18) return (n/1e18).toFixed(2) + ' EB';
+  if(n >= 1e15) return (n/1e15).toFixed(2) + ' PB';
+  if(n >= 1e12) return (n/1e12).toFixed(2) + ' TB';
+  if(n >= 1e9)  return (n/1e9).toFixed(2)  + ' GB';
+  if(n >= 1e6)  return (n/1e6).toFixed(2)  + ' MB';
+  if(n >= 1e3)  return (n/1e3).toFixed(2)  + ' KB';
+  return n.toFixed(0) + ' B';
+}
+function fmtNum(n){
+  if(n >= 1e9)  return (n/1e9).toFixed(2)  + 'B';
+  if(n >= 1e6)  return (n/1e6).toFixed(2)  + 'M';
+  if(n >= 1e3)  return (n/1e3).toFixed(1)  + 'K';
+  return n.toFixed(0);
+}
+
+function recalc(){
+  const dau       = parseFloat(document.getElementById('inp-dau').value)||0;
+  const reads     = parseFloat(document.getElementById('inp-reads').value)||0;
+  const writes    = parseFloat(document.getElementById('inp-writes').value)||0;
+  const objsize   = parseFloat(document.getElementById('inp-objsize').value)||0;
+  const respsize  = parseFloat(document.getElementById('inp-respsize').value)||0;
+  const retention = parseFloat(document.getElementById('inp-retention').value)||1;
+  const peak      = parseFloat(document.getElementById('inp-peak').value)||1;
+  const repl      = parseFloat(document.getElementById('inp-repl').value)||1;
+
+  const DAY = 86400;
+  const readRPS   = dau * reads / DAY;
+  const writeTPS  = dau * writes / DAY;
+  const peakRead  = readRPS * peak;
+  const peakWrite = writeTPS * peak;
+  const dailyData = writeTPS * DAY * objsize;
+  const totalLogical = dailyData * 365 * retention;
+  const totalReal = totalLogical * repl;
+  const outboundMbps = peakRead * respsize * 8 / 1e6;
+  const inboundMbps  = peakWrite * objsize * 8 / 1e6;
+  const cacheSize    = dau * reads / DAY * 7 * DAY * objsize * 0.20;
+  const concConns    = readRPS * 0.2; // assume 200ms avg response
+  const dbQPS        = readRPS * 0.05; // assume 95% cache hit
+  const appServers   = Math.ceil(peakRead / 5000 * 1.3);
+
+  const results = [
+    {label:'Avg read RPS', val:fmtNum(readRPS), unit:'req/sec', cls:''},
+    {label:`Peak read RPS (${peak}×)`, val:fmtNum(peakRead), unit:'req/sec', cls: peakRead > 100000 ? 'crit' : peakRead > 10000 ? 'warn' : ''},
+    {label:'Avg write TPS', val:fmtNum(writeTPS), unit:'txn/sec', cls:''},
+    {label:`Peak write TPS (${peak}×)`, val:fmtNum(peakWrite), unit:'txn/sec', cls: peakWrite > 5000 ? 'warn' : ''},
+    {label:'Daily new data', val:fmt(dailyData), unit:'per day', cls:'info'},
+    {label:`${retention}-year logical`, val:fmt(totalLogical), unit:'logical', cls:'info'},
+    {label:`Total on disk (×${repl} repl)`, val:fmt(totalReal), unit:'real storage', cls: totalReal > 1e15 ? 'crit' : 'warn'},
+    {label:'Outbound bandwidth', val:outboundMbps >= 1000 ? (outboundMbps/1000).toFixed(1) : outboundMbps.toFixed(1), unit: outboundMbps >= 1000 ? 'Gbps outbound' : 'Mbps outbound', cls: outboundMbps > 10000 ? 'crit' : outboundMbps > 1000 ? 'warn' : ''},
+    {label:'Inbound bandwidth', val:inboundMbps >= 1000 ? (inboundMbps/1000).toFixed(1) : inboundMbps.toFixed(1), unit: inboundMbps >= 1000 ? 'Gbps inbound' : 'Mbps inbound', cls:''},
+    {label:'Cache size (7-day hot, 20%)', val:fmt(cacheSize), unit:'Redis target', cls:'purple'},
+    {label:'DB load (after cache)', val:fmtNum(dbQPS), unit:'QPS to DB', cls: dbQPS > 10000 ? 'warn' : ''},
+    {label:'Concurrent connections', val:fmtNum(concConns), unit:'open conns', cls: concConns > 50000 ? 'warn' : ''},
+    {label:'App servers needed', val:appServers.toString(), unit:`at 5K RPS/server +30% headroom`, cls: appServers > 50 ? 'warn' : ''},
+    {label:'Read : Write ratio', val:writeTPS > 0 ? (readRPS/writeTPS).toFixed(0)+':1' : '∞', unit:'skew', cls: readRPS/writeTPS > 100 ? 'warn' : ''},
+  ];
+
+  document.getElementById('calc-results').innerHTML = results.map(r =>
+    `<div class="calc-result ${r.cls}">
+      <div class="calc-result-label">${r.label}</div>
+      <div class="calc-result-val">${r.val}</div>
+      <div class="calc-result-unit">${r.unit}</div>
+    </div>`
+  ).join('');
+}
+
+recalc();
+</script>
+</body>
+</html>
